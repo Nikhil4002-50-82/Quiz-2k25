@@ -1,11 +1,20 @@
-import React from 'react'
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import StudentDashboard from "./components/StudentDashboard/StudentDashboard";
+import TeacherDashboard from "./components/TeacherDashboard/TeacherDashboard";
 
 const App = () => {
   return (
-    <div>
-      <p className='text-4xl text-red-600'>Hello</p>
+    <div className="font-edu">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/teacher" element={<TeacherDashboard />} />
+        </Routes>
+      </BrowserRouter>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
