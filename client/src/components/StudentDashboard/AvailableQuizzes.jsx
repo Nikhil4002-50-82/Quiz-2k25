@@ -9,7 +9,7 @@ const AvailableQuizzes = ({ quizTitle, quizDuration, quizDate }) => {
         <p>|</p>
         <p className="ml-[1em]">Date: {quizDate}</p>
       </div>
-      <button className="text-white w-[8em] h-auto px-1 py-[0.4em] bg-blue-600 text-white flex items-center justify-center font-semibold rounded-lg">
+      <button className="text-white w-[8em] h-auto px-1 py-[0.4em] bg-brandBlue text-white flex items-center justify-center font-semibold rounded-lg">
         Start Quiz
       </button>
     </div>

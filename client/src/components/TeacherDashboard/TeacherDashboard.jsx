@@ -1,17 +1,54 @@
-import React from 'react'
-import TeacherHeader from './TeacherHeader'
-import TeacherFooter from './TeacherFooter'
+import React from "react";
+import TeacherHeader from "./TeacherHeader";
+import TeacherFooter from "./TeacherFooter";
+import ManageQuizzes from "./ManageQuizzes";
+import StudentSubmissions from "./StudentSubmissions";
 
 const TeacherDashboard = () => {
   return (
-    <div>
+    <div className="bg-gray-200">
       <TeacherHeader />
-      <div className='h-[65vh]'>
-        h
+      <div className="p-10 text-black h-auto">
+        <h1 className="font-semibold text-2xl mb-6">Manage Quizzes</h1>
+        <div className="grid grid-cols-4 gap-10">
+          <ManageQuizzes
+            quizTitle="Maths Quiz"
+            quizDuration="30"
+            quizDate="2025-06-20"
+          />
+          <ManageQuizzes
+            quizTitle="Physics MCQs"
+            quizDuration="20"
+            quizDate="2025-06-22"
+          />
+        </div>
+      </div>
+      <div className="px-10 text-black">
+        <h1 className="font-semibold text-2xl mb-6">Student Submissions</h1>
+        <div className="">
+          <div className="font-semibold text-lg grid grid-cols-[5fr_5fr_3fr_3fr] bg-blue-600 text-white rounded-t-lg">
+            <h1 className="p-4 ">Student</h1>
+            <h1 className="p-4 ">Quiz</h1>
+            <p className="p-4 ">Score</p>
+            <p className="p-4 ">Action</p>
+          </div>
+          <StudentSubmissions
+            student="Nikhil"
+            quizTitle="Maths Quiz"
+            quizScore="9/10"
+            quizAction="Graded"
+          />
+          <StudentSubmissions
+            student="Varshini"
+            quizTitle="Maths Quiz"
+            quizScore="9/10"
+            quizAction="Grade"
+          />
+        </div>
       </div>
       <TeacherFooter />
     </div>
-  )
-}
+  );
+};
 
-export default TeacherDashboard
+export default TeacherDashboard;
