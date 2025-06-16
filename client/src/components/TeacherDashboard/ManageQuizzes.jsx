@@ -10,10 +10,7 @@ const ManageQuizzes = ({ quizTitle, quizDuration, quizDate }) => {
         <p className="ml-[1em]">Date: {quizDate}</p>
       </div>
       <div className="flex items-center">
-        <button className="text-white w-[4em] h-auto px-1 py-[0.4em] bg-blue-600 text-white flex items-center justify-center font-semibold rounded-lg mr-2">
-          Edit
-        </button>
-        <button className="text-white w-[6em] h-auto px-1 py-[0.4em] bg-red-600 text-white flex items-center justify-center font-semibold rounded-lg">
+        <button className="text-white bg-blue-600 w-[6em] h-auto px-1 py-[0.4em] hover:bg-red-600 flex items-center justify-center font-semibold rounded-lg">
           Delete
         </button>
       </div>

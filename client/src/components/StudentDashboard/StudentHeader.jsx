@@ -2,12 +2,12 @@ import React from "react";
 
 const StudentHeader = () => {
   return (
-    <div className="h-[7em] w-full bg-brandBlue flex items-center px-8">
+    <div className="h-[7em] w-full bg-purple-600 flex items-center px-8">
       <div className="flex justify-between w-full">
          <h1 className="text-white font-bold text-3xl mr-[2em]">
           QuizMaster-2K25 | <span className='text-xl'>Student Panel</span>
         </h1>
-        <button className="text-brandBlue w-[8em] bg-white hover:bg-red-600 hover:text-white flex items-center justify-center font-bold rounded-lg">
+        <button className="text-purple-600 w-[8em] bg-white hover:bg-red-600 hover:text-white flex items-center justify-center font-bold rounded-lg">
           Log out
         </button>
       </div>

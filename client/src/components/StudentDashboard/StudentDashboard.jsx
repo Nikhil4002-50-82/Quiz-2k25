@@ -5,6 +5,48 @@ import StudentFooter from "./StudentFooter";
 import PerformanceReportComp from "./PerformanceReportComp";
 
 const StudentDashboard = () => {
+  const sampleQuizData = {
+  title: "Midterm Quiz",
+  description: "A quiz covering basic JavaScript and React concepts.",
+  date: "2025-06-20",
+  duration: 20,
+  questions: [
+    {
+      id: 1,
+      text: "What is the purpose of useState in React?",
+      type: "objective",
+      marks: "2",
+      options: [
+        "To manage component state",
+        "To fetch data from an API",
+        "To navigate between routes",
+        "To style components",
+      ],
+      correctOption: 0,
+    },
+    {
+      id: 2,
+      text: "Explain the difference between let and const in JavaScript.",
+      type: "subjective",
+      marks: "5",
+      options: [], // No options for subjective questions
+      correctOption: null,
+    },
+    {
+      id: 3,
+      text: "Which method is used to update the state in a React functional component?",
+      type: "objective",
+      marks: "3",
+      options: [
+        "setState",
+        "useEffect",
+        "useState setter function",
+        "render",
+      ],
+      correctOption: 2,
+    },
+  ],
+};
   return (
     <div className="bg-gray-200 h-auto w-full">
       <StudentHeader />
@@ -15,10 +57,11 @@ const StudentDashboard = () => {
             quizTitle="Physics MCQs"
             quizDuration="20"
             quizDate="2025-06-22"
+            quizData={sampleQuizData}
           />
           <AvailableQuizzes
             quizTitle="Maths Quiz"
-            quizDuration="30"
+            quizDuration="20"
             quizDate="2025-06-20"
           />
         </div>
@@ -26,7 +69,7 @@ const StudentDashboard = () => {
       <div className="px-10 text-black">
         <h1 className="font-semibold text-2xl mb-6">Performance Reports</h1>
         <div className="">
-          <div className="font-semibold text-lg grid grid-cols-[5fr_3fr_3fr] bg-brandBlue text-white rounded-t-lg">
+          <div className="font-semibold text-lg grid grid-cols-[5fr_3fr_3fr] bg-purple-600 text-white rounded-t-lg">
             <h1 className="p-4 ">Quiz</h1>
             <p className="p-4 ">Score</p>
             <p className="p-4 ">Status</p>

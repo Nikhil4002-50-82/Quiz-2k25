@@ -1,15 +1,23 @@
 import React from "react";
+import {useNavigate} from "react-router-dom"
 import TeacherHeader from "./TeacherHeader";
 import TeacherFooter from "./TeacherFooter";
 import ManageQuizzes from "./ManageQuizzes";
 import StudentSubmissions from "./StudentSubmissions";
 
 const TeacherDashboard = () => {
+  const navigate=useNavigate();
   return (
     <div className="bg-gray-200">
       <TeacherHeader />
       <div className="p-10 text-black h-auto">
-        <h1 className="font-semibold text-2xl mb-6">Manage Quizzes</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-semibold text-2xl mb-6">Manage Quizzes</h1>
+          <button className="text-white font-semibold bg-blue-600 p-2 px-3 rounded-lg" onClick={(e)=>{
+            e.preventDefault();
+            navigate("/newQuiz")
+          }}>+ Create New Quiz</button>
+        </div>
         <div className="grid grid-cols-4 gap-10">
           <ManageQuizzes
             quizTitle="Maths Quiz"

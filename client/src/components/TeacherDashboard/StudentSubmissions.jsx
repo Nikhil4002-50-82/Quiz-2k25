@@ -8,7 +8,7 @@ const StudentSubmissions = ({ student, quizTitle, quizScore, quizAction }) => {
       <p className="p-4 text-sm">{quizScore}</p>
       <p
         className={`p-4 font-semibold ${
-          quizAction == "Graded" ? "text-green-600" : "bg-green-600 ml-[0.5em] mt-[0.6em] rounded-lg w-[5em] h-[1em] flex items-center justify-center text-white"
+          quizAction == "Graded" ? "text-green-600" : "bg-green-600 ml-[0.5em] mt-[0.6em] rounded-lg w-[5em] h-[1em] flex items-center justify-center text-white cursor-pointer"
         }`}
       >
         {quizAction}
