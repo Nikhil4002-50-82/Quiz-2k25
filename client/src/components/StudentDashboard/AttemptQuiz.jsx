@@ -8,16 +8,20 @@ const AttemptQuiz = () => {
   const location = useLocation();
   const quizData = location.state?.quizData;
 
-  const [timeLeft, setTimeLeft] = useState(
-    quizData ? quizData.duration * 60 : 0
-  );
+  const [timeLeft, setTimeLeft] = useState(null);
   const [answers, setAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+    if (quizData) {
+      setTimeLeft(quizData[0].duration * 60);
+    }
+  }, [quizData]);
+
+  useEffect(() => {
     if (!quizData) return;
 
-    if (timeLeft <= 0 && !isSubmitted) {
+    if (timeLeft != null && timeLeft <= 0 && !isSubmitted) {
       handleSubmit();
       return;
     }
@@ -27,10 +31,10 @@ const AttemptQuiz = () => {
     return () => clearInterval(timer);
   }, [timeLeft, quizData, isSubmitted]);
 
-  const handleAnswerChange = (questionId, value) => {
+  const handleAnswerChange = (question_id, value) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: value,
+      [question_id]: value,
     }));
   };
 
@@ -54,21 +58,25 @@ const AttemptQuiz = () => {
         <div className="w-[80%] mx-auto bg-white shadow-xl rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-3xl font-semibold text-purple-600">
-              {quizData.title}
+              {quizData[0].title}
             </h2>
             <div className="text-lg font-medium text-red-600">
               Time Left: {formatTime(timeLeft)}
             </div>
           </div>
 
-          <p className="text-gray-600 mb-4 font-semibold">{quizData.description}</p>
-          <p className="text-gray-600 mb-6 font-semibold">Date: {quizData.date}</p>
+          <p className="text-gray-600 mb-4 font-semibold">
+            {quizData[0].description}
+          </p>
+          <p className="text-gray-600 mb-6 font-semibold">
+            Date: {quizData[0].date}
+          </p>
 
           {!isSubmitted && (
             <form onSubmit={handleSubmit}>
               <div className="mt-6">
                 <h3 className="text-lg font-semibold mb-2">Questions</h3>
-                {quizData.questions.map((q, idx) => (
+                {quizData[0].questions.map((q, idx) => (
                   <div
                     key={q.id}
                     className="bg-gray-50 p-4 rounded mb-3 border"

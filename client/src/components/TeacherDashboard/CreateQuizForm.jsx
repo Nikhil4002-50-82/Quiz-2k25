@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import supabase from "../../../utils/supabase";
 
 const CreateQuizForm = () => {
   const [questions, setQuestions] = useState([]);
@@ -7,7 +8,14 @@ const CreateQuizForm = () => {
   const addQuestion = () => {
     setQuestions([
       ...questions,
-      { id: questionId, text: "", type: "objective", marks: "", options: ["", "", "", ""], correctOption: null },
+      {
+        id: questionId,
+        text: "",
+        type: "objective",
+        marks: "",
+        options: ["", "", "", ""],
+        correctOption: null,
+      },
     ]);
     setQuestionId(questionId + 1);
   };

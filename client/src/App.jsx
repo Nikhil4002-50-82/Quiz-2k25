@@ -5,12 +5,14 @@ import StudentDashboard from "./components/StudentDashboard/StudentDashboard";
 import TeacherDashboard from "./components/TeacherDashboard/TeacherDashboard";
 import NewQuiz from "./components/TeacherDashboard/NewQuiz";
 import AttemptQuiz from "./components/StudentDashboard/AttemptQuiz";
+import AuthComponent from "./components/Home/AuthComponent";
 
 const App = () => {
   return (
     <div className="font-edu">
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<AuthComponent />} />
           <Route path="/student" element={<StudentDashboard />} />
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/newQuiz" element={<NewQuiz />} />
