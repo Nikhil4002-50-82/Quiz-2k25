@@ -60,46 +60,54 @@ const CreateQuizForm = () => {
   };
 
   return (
-    <div className="w-[80%] mx-auto bg-white shadow-xl rounded-lg p-6">
+    <div className="w-[90%] md:w-[80%] lg:w-[70%] xl:w-[80%] max-w-5xl mx-auto bg-white shadow-xl rounded-lg p-4 sm:p-6 md:p-8">
       <form onSubmit={handleSubmit}>
-        <h2 className="text-3xl font-semibold mb-4 text-blue-600 flex items-center justify-center">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-4 text-blue-600 flex items-center justify-center">
           Create New Quiz
         </h2>
 
-        <label className="block font-medium mt-4">Quiz Title</label>
+        <label className="block font-medium text-sm sm:text-base mt-4">
+          Quiz Title
+        </label>
         <input
           type="text"
           name="title"
-          className="w-full p-2 mt-1 border rounded"
+          className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
           placeholder="e.g. Midterm Quiz"
           required
         />
 
-        <label className="block font-medium mt-4">Description</label>
+        <label className="block font-medium text-sm sm:text-base mt-4">
+          Description
+        </label>
         <textarea
           name="description"
-          className="w-full p-2 mt-1 border rounded"
+          className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
           placeholder="Brief description..."
           rows="3"
           required
         ></textarea>
 
-        <div className="flex gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <div className="w-full">
-            <label className="block font-medium">Date</label>
+            <label className="block font-medium text-sm sm:text-base">
+              Date
+            </label>
             <input
               type="date"
               name="date"
-              className="w-full p-2 mt-1 border rounded"
+              className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
               required
             />
           </div>
           <div className="w-full">
-            <label className="block font-medium">Time Limit (minutes)</label>
+            <label className="block font-medium text-sm sm:text-base">
+              Time Limit (minutes)
+            </label>
             <input
               type="number"
               name="duration"
-              className="w-full p-2 mt-1 border rounded"
+              className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
               placeholder="e.g. 30"
               required
             />
@@ -107,24 +115,30 @@ const CreateQuizForm = () => {
         </div>
 
         <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Questions</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
+            Questions
+          </h3>
           {questions.map((q, idx) => (
             <div key={q.id} className="bg-gray-50 p-4 rounded mb-3 border">
-              <label className="block font-medium">Question {idx + 1}</label>
+              <label className="block font-medium text-sm sm:text-base">
+                Question {idx + 1}
+              </label>
               <input
                 type="text"
-                className="w-full p-2 mt-1 border rounded"
+                className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
                 placeholder="Enter the question"
                 value={q.text}
                 onChange={(e) => handleChange(q.id, "text", e.target.value)}
                 required
               />
 
-              <div className="flex gap-4 mt-3">
+              <div className="flex flex-col sm:flex-row gap-4 mt-3">
                 <div className="w-full">
-                  <label className="block font-medium">Type</label>
+                  <label className="block font-medium text-sm sm:text-base">
+                    Type
+                  </label>
                   <select
-                    className="w-full p-2 mt-1 border rounded"
+                    className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
                     value={q.type}
                     onChange={(e) => handleChange(q.id, "type", e.target.value)}
                   >
@@ -133,10 +147,12 @@ const CreateQuizForm = () => {
                   </select>
                 </div>
                 <div className="w-full">
-                  <label className="block font-medium">Marks</label>
+                  <label className="block font-medium text-sm sm:text-base">
+                    Marks
+                  </label>
                   <input
                     type="number"
-                    className="w-full p-2 mt-1 border rounded"
+                    className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
                     placeholder="e.g. 2"
                     value={q.marks}
                     onChange={(e) =>
@@ -149,7 +165,9 @@ const CreateQuizForm = () => {
 
               {q.type === "objective" && (
                 <div className="mt-3">
-                  <label className="block font-medium">Options</label>
+                  <label className="block font-medium text-sm sm:text-base">
+                    Options
+                  </label>
                   {q.options.map((option, optIdx) => (
                     <div key={optIdx} className="flex items-center gap-2 mb-2">
                       <input
@@ -161,7 +179,7 @@ const CreateQuizForm = () => {
                       />
                       <input
                         type="text"
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 sm:p-3 border rounded text-sm sm:text-base"
                         placeholder={`Option ${optIdx + 1}`}
                         value={option}
                         onChange={(e) =>
@@ -176,7 +194,7 @@ const CreateQuizForm = () => {
 
               <button
                 type="button"
-                className="mt-3 bg-red-600 font-semibold text-white px-3 py-1 rounded-lg"
+                className="mt-3 bg-red-600 font-semibold text-white px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm sm:text-base"
                 onClick={() => removeQuestion(q.id)}
               >
                 Remove
@@ -186,7 +204,7 @@ const CreateQuizForm = () => {
 
           <button
             type="button"
-            className="mt-2 bg-blue-600 font-semibold text-white px-4 py-2 rounded-xl"
+            className="mt-2 bg-blue-600 font-semibold text-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl text-sm sm:text-base"
             onClick={addQuestion}
           >
             + Add Question
@@ -195,7 +213,7 @@ const CreateQuizForm = () => {
 
         <button
           type="submit"
-          className="mt-6 text-xl w-full bg-blue-600 font-semibold text-white py-3 rounded-xl"
+          className="mt-6 text-base sm:text-xl w-full bg-blue-600 font-semibold text-white py-2 sm:py-3 rounded-xl"
         >
           Create Quiz
         </button>

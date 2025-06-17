@@ -52,50 +52,52 @@ const AttemptQuiz = () => {
   };
 
   return (
-    <div className="bg-gray-200">
+    <div className="flex flex-col min-h-screen bg-gray-200">
       <StudentHeader />
-      <div className="mt-6">
-        <div className="w-[80%] mx-auto bg-white shadow-xl rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-semibold text-purple-600">
+      <main className="flex-grow mt-2 sm:mt-4 md:mt-6">
+        <div className="w-[90%] md:w-[80%] lg:w-[75%] xl:w-[80%] mx-auto bg-white shadow-xl rounded-lg p-4 sm:p-5 md:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-purple-600 mb-2 sm:mb-0">
               {quizData[0].title}
             </h2>
-            <div className="text-lg font-medium text-red-600">
+            <div className="text-sm sm:text-base md:text-lg font-medium text-red-600">
               Time Left: {formatTime(timeLeft)}
             </div>
           </div>
 
-          <p className="text-gray-600 mb-4 font-semibold">
+          <p className="text-gray-600 mb-2 sm:mb-4 text-sm sm:text-base font-semibold">
             {quizData[0].description}
           </p>
-          <p className="text-gray-600 mb-6 font-semibold">
+          <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base font-semibold">
             Date: {quizData[0].date}
           </p>
 
           {!isSubmitted && (
             <form onSubmit={handleSubmit}>
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-2">Questions</h3>
+              <div className="mt-4 sm:mt-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-2">
+                  Questions
+                </h3>
                 {quizData[0].questions.map((q, idx) => (
                   <div
                     key={q.id}
-                    className="bg-gray-50 p-4 rounded mb-3 border"
+                    className="bg-gray-50 p-3 sm:p-4 rounded mb-2 sm:mb-3 border"
                   >
-                    <div className="flex justify-between">
-                      <label className="block font-medium">
+                    <div className="flex flex-col sm:flex-row justify-between">
+                      <label className="block font-medium text-sm sm:text-base">
                         Question {idx + 1}: {q.text}
                       </label>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-0">
                         Marks: {q.marks}
                       </span>
                     </div>
 
                     {q.type === "objective" ? (
-                      <div className="mt-3">
+                      <div className="mt-2 sm:mt-3">
                         {q.options.map((option, optIdx) => (
                           <div
                             key={optIdx}
-                            className="flex items-center gap-2 mb-2"
+                            className="flex items-center gap-2 mb-1 sm:mb-2"
                           >
                             <input
                               type="radio"
@@ -105,19 +107,19 @@ const AttemptQuiz = () => {
                               onChange={(e) =>
                                 handleAnswerChange(q.id, e.target.value)
                               }
-                              className="mr-2"
+                              className="mr-1 sm:mr-2"
                               disabled={isSubmitted}
                               required
                             />
-                            <span>{option}</span>
+                            <span className="text-sm sm:text-base">{option}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
                       <textarea
-                        className="w-full p-2 mt-3 border rounded"
+                        className="w-full p-2 mt-2 sm:mt-3 border rounded text-sm sm:text-base"
                         placeholder="Enter your answer..."
-                        rows="4"
+                        rows="3 sm:rows-4"
                         value={answers[q.id] || ""}
                         onChange={(e) =>
                           handleAnswerChange(q.id, e.target.value)
@@ -132,7 +134,7 @@ const AttemptQuiz = () => {
 
               <button
                 type="submit"
-                className="mt-6 text-xl w-full bg-purple-600 font-semibold text-white py-3 rounded-xl disabled:bg-gray-400"
+                className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl w-full bg-purple-600 font-semibold text-white py-2 sm:py-3 rounded-xl disabled:bg-gray-400"
                 disabled={isSubmitted}
                 onClick={() => {
                   navigate("/student");
@@ -143,7 +145,7 @@ const AttemptQuiz = () => {
             </form>
           )}
         </div>
-      </div>
+      </main>
       <StudentFooter />
     </div>
   );
