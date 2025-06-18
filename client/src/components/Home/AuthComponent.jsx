@@ -78,13 +78,23 @@ const AuthComponent = () => {
         setError("Invalid credentials.");
         return;
       }
-      setLoggedIn(true);
-      setUserData({
-        role,
-        ...(role === "student"
-          ? {id:data.student_id, name: data.name, bec_no: data.bec_no }
-          : {id:data.teacher_id, name: data.name, email: data.email }),
-      });
+      // setLoggedIn(true);
+      localStorage.setItem("loggedIn", "true");
+      // setUserData({
+      //   role,
+      //   ...(role === "student"
+      //     ? {id:data.student_id, name: data.name, bec_no: data.bec_no }
+      //     : {id:data.teacher_id, name: data.name, email: data.email }),
+      // });
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          role,
+          ...(role === "student"
+            ? { id: data.student_id, name: data.name, bec_no: data.bec_no }
+            : { id: data.teacher_id, name: data.name, email: data.email }),
+        })
+      );
 
       alert(`Logged in successfully as ${role}`);
       navigate(role === "student" ? "/student" : "/teacher");

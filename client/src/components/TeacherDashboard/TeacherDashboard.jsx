@@ -14,17 +14,37 @@ const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
 
+  const deleteQuiz = async (quizId) => {
+    const { error } = await supabase
+      .from("quizzes")
+      .delete()
+      .eq("quiz_id", quizId);
+
+    if (error) {
+      console.error("Delete error:", error.message);
+    } else {
+      setQuizzes((prev) => prev.filter((quiz) => quiz.quiz_id !== quizId));
+    }
+  };
+
   useEffect(() => {
+    if (!userData) return; // Guard clause to avoid crash on initial null
+
     const getQuizMetaData = async () => {
-      let { data: quizzes, error } = await supabase
+      const { data: quizzes, error } = await supabase
         .from("quizzes")
         .select("*")
         .eq("teacher_id", userData.id);
 
+      if (error) {
+        console.error("Error fetching quizzes:", error.message);
+      }
+
       setQuizzes(quizzes);
     };
+
     getQuizMetaData();
-  }, []);
+  }, [userData]); // Now re-runs when userData is populated
 
   const createManageQuizCards = (list) => {
     return (
@@ -34,9 +54,13 @@ const TeacherDashboard = () => {
         quizDuration={list.time_limit}
         quizDate={list.date}
         id={list.quiz_id}
+        onDelete={deleteQuiz}
       />
     );
   };
+
+  if (!userData) return <div className="text-center mt-10">Loading...</div>;
+
   return (
     <div className="bg-gray-200 min-h-screen">
       <TeacherHeader />
@@ -59,6 +83,7 @@ const TeacherDashboard = () => {
           {quizzes && quizzes.map(createManageQuizCards)}
         </div>
       </div>
+
       <div className="px-4 sm:px-6 md:px-8 lg:px-10 pb-10 text-black">
         <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
           Student Submissions
@@ -70,6 +95,7 @@ const TeacherDashboard = () => {
             <p className="p-2 sm:p-3 md:p-4">Score</p>
             <p className="p-2 sm:p-3 md:p-4">Action</p>
           </div>
+          {/* You can fetch and map real submissions here */}
           <StudentSubmissions
             student="Nikhil"
             quizTitle="Maths Quiz"
@@ -84,6 +110,7 @@ const TeacherDashboard = () => {
           />
         </div>
       </div>
+
       <TeacherFooter />
     </div>
   );

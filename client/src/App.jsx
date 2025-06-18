@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import StudentDashboard from "./components/StudentDashboard/StudentDashboard";
@@ -12,6 +12,16 @@ import { LoginContext } from "./context/LoginContext";
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+    const user = JSON.parse(localStorage.getItem("userData"));
+    if (isLoggedIn && user) {
+      setLoggedIn(true);
+      setUserData(user);
+    }
+  }, []);
+  
   return (
     <div className="font-edu">
       <LoginContext.Provider

@@ -8,7 +8,7 @@ import PerformanceReportComp from "./PerformanceReportComp";
 import { LoginContext } from "../../context/LoginContext";
 
 const StudentDashboard = () => {
-  const { loggedIn, setLoggedIn } = useContext(LoginContext);
+  const { loggedIn, setLoggedIn,userData } = useContext(LoginContext);
 
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -68,10 +68,9 @@ const StudentDashboard = () => {
         };
       });
       setQuizData(formattedQuizData);
-      console.log("Formatted Quiz Data:", formattedQuizData);
     };
     getAllData();
-  }, []);
+  }, [loggedIn]);
 
   const createQuizzes = (list) => {
     const fullQuizData = quizData.find((q) => q.quiz_id === list.quiz_id);
@@ -86,7 +85,7 @@ const StudentDashboard = () => {
       />
     );
   };
-
+if (!userData) return <div className="text-center mt-10">Loading...</div>;
   return (
     <>
       {loggedIn && (
