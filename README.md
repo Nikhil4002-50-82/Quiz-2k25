@@ -28,7 +28,7 @@
 
 ---
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 1. **Clone the Repository**
    ```bash
@@ -77,4 +77,4 @@ Contributions are welcome! Please follow these steps:
 ## Contact
 
 **Author:** Nikhil  
-📧 Email: nikhil.4002.50.82 
+Email: nikhil.4002.50.82 
