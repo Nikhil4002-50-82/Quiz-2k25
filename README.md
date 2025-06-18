@@ -1,51 +1,30 @@
 
-# QuizMaster-2k25 🎓
+# QuizMaster-2k25 
 
 **QuizMaster-2k25** is a full-stack web application designed for educational institutions to manage, conduct, and evaluate quizzes online. Teachers can create and manage quizzes, while students can take quizzes, track performance, and receive instant feedback.
 
-> 🚀 Built with React, Supabase, and TailwindCSS
+> Built with React, Supabase, and TailwindCSS
 
 ---
 
-## 🧠 Features
+## Features
 
-### 👨‍🏫 For Teachers
+### For Teachers
 - Secure authentication using Supabase
 - Create quizzes with dynamic questions and options
 - Set quiz duration and schedule
 - View student performance reports
 
-### 👨‍🎓 For Students
+### For Students
 - View all available quizzes
 - Attempt quizzes with a real-time timer
 - Auto-submit on time completion
 - View scores and quiz status instantly
 
-### 📊 Performance Dashboard
+### Performance Dashboard
 - Track quiz history
 - Analyze passed/failed status
 - View scores in a clean tabular format
-
----
-
-## 📁 Folder Structure
-
-```
-quizmaster-2k25/
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── Teacher/
-│   │   ├── Student/
-│   │   ├── common/
-│   ├── context/
-│   ├── pages/
-│   ├── utils/
-│   └── App.jsx
-├── .env
-├── package.json
-└── README.md
-```
 
 ---
 
@@ -75,37 +54,7 @@ quizmaster-2k25/
 
 ---
 
-## 🛠️ Database Schema (Supabase)
-
-### `quizzes`
-| Field        | Type       |
-|--------------|------------|
-| quiz_id      | UUID (PK)  |
-| title        | Text       |
-| description  | Text       |
-| date         | Date       |
-| time_limit   | Integer    |
-| teacher_id   | UUID (FK)  |
-
-### `questions`
-| Field         | Type      |
-|---------------|-----------|
-| question_id   | UUID (PK) |
-| quiz_id       | UUID (FK) |
-| question_text | Text      |
-| question_type | Text      |
-
-### `options`
-| Field        | Type      |
-|--------------|-----------|
-| option_id    | UUID (PK) |
-| question_id  | UUID (FK) |
-| option_text  | Text      |
-| is_correct   | Boolean   |
-
----
-
-## 🤝 Contribution
+## Contribution
 
 Contributions are welcome! Please follow these steps:
 
@@ -117,7 +66,7 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## ✨ Acknowledgements
+## Acknowledgements
 
 - [Supabase](https://supabase.com/)
 - [React](https://reactjs.org/)
@@ -125,7 +74,7 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📬 Contact
+## Contact
 
 **Author:** Nikhil  
 📧 Email: nikhil.4002.50.82 
