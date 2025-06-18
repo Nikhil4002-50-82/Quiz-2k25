@@ -28,16 +28,6 @@
 
 ---
 
-## 🔧 Tech Stack
-
-| Frontend  | Backend  | Database | Auth & Storage |
-|-----------|----------|----------|----------------|
-| React     | Express (Optional) | Supabase | Supabase         |
-| Tailwind CSS | Supabase Functions | PostgreSQL | Supabase Auth    |
-| React Router |        |          | Supabase Storage |
-
----
-
 ## 📁 Folder Structure
 
 ```
@@ -115,15 +105,6 @@ quizmaster-2k25/
 
 ---
 
-## 💡 Future Improvements
-
-- Admin panel for overall quiz management
-- Detailed analytics dashboard for teachers
-- Notification system for upcoming quizzes
-- Mobile responsiveness & PWA support
-
----
-
 ## 🤝 Contribution
 
 Contributions are welcome! Please follow these steps:
@@ -133,12 +114,6 @@ Contributions are welcome! Please follow these steps:
 3. Commit your changes (`git commit -am 'Add feature'`)
 4. Push to the branch (`git push origin feature-name`)
 5. Open a Pull Request
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
 
 ---
 
@@ -153,5 +128,4 @@ This project is licensed under the **MIT License**.
 ## 📬 Contact
 
 **Author:** Nikhil  
-📧 Email: your-email@example.com  
-🌐 Portfolio: [your-portfolio-link](https://your-portfolio.com)
+📧 Email: nikhil.4002.50.82 
