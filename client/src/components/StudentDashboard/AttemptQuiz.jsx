@@ -14,7 +14,7 @@ const AttemptQuiz = () => {
 
   useEffect(() => {
     if (quizData) {
-      setTimeLeft(quizData[0].duration * 60);
+      setTimeLeft(quizData.duration * 60);
     }
   }, [quizData]);
 
@@ -58,7 +58,7 @@ const AttemptQuiz = () => {
         <div className="w-[90%] md:w-[80%] lg:w-[75%] xl:w-[80%] mx-auto bg-white shadow-xl rounded-lg p-4 sm:p-5 md:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-purple-600 mb-2 sm:mb-0">
-              {quizData[0].title}
+              {quizData.title}
             </h2>
             <div className="text-sm sm:text-base md:text-lg font-medium text-red-600">
               Time Left: {formatTime(timeLeft)}
@@ -66,10 +66,10 @@ const AttemptQuiz = () => {
           </div>
 
           <p className="text-gray-600 mb-2 sm:mb-4 text-sm sm:text-base font-semibold">
-            {quizData[0].description}
+            {quizData.description}
           </p>
           <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base font-semibold">
-            Date: {quizData[0].date}
+            Date: {quizData.date}
           </p>
 
           {!isSubmitted && (
@@ -78,7 +78,7 @@ const AttemptQuiz = () => {
                 <h3 className="text-base sm:text-lg font-semibold mb-2">
                   Questions
                 </h3>
-                {quizData[0].questions.map((q, idx) => (
+                {quizData.questions.map((q, idx) => (
                   <div
                     key={q.id}
                     className="bg-gray-50 p-3 sm:p-4 rounded mb-2 sm:mb-3 border"
@@ -111,7 +111,9 @@ const AttemptQuiz = () => {
                               disabled={isSubmitted}
                               required
                             />
-                            <span className="text-sm sm:text-base">{option}</span>
+                            <span className="text-sm sm:text-base">
+                              {option}
+                            </span>
                           </div>
                         ))}
                       </div>

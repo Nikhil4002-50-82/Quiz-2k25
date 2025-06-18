@@ -68,18 +68,21 @@ const StudentDashboard = () => {
         };
       });
       setQuizData(formattedQuizData);
+      console.log("Formatted Quiz Data:", formattedQuizData);
     };
     getAllData();
   }, []);
 
   const createQuizzes = (list) => {
+    const fullQuizData = quizData.find((q) => q.quiz_id === list.quiz_id);
+
     return (
       <AvailableQuizzes
         key={list.quiz_id}
         quizTitle={list.title}
         quizDuration={list.time_limit}
         quizDate={list.date}
-        quizData={quizData}
+        quizData={fullQuizData}
       />
     );
   };

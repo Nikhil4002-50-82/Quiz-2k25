@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import supabase from "../../../utils/supabase";
+import { LoginContext } from "../../context/LoginContext";
 
 const CreateQuizForm = () => {
+  const { userData } = useContext(LoginContext);
   const [questions, setQuestions] = useState([]);
   const [questionId, setQuestionId] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const addQuestion = () => {
     setQuestions([
       ...questions,
       {
         id: questionId,
-        text: "",
-        type: "objective",
+        question_text: "",
+        question_type: "objective",
         marks: "",
         options: ["", "", "", ""],
         correctOption: null,
@@ -53,10 +57,192 @@ const CreateQuizForm = () => {
     );
   };
 
-  const handleSubmit = (e) => {
+  const validateQuestions = () => {
+    if (questions.length === 0) {
+      return "At least one question is required.";
+    }
+    for (const q of questions) {
+      if (!q.question_text.trim()) {
+        return "All questions must have text.";
+      }
+      if (!q.marks || isNaN(parseInt(q.marks)) || parseInt(q.marks) <= 0) {
+        return "All questions must have valid marks (positive number).";
+      }
+      if (q.question_type === "objective") {
+        if (q.options.some((opt) => !opt.trim())) {
+          return "All options for objective questions must be filled.";
+        }
+        if (q.correctOption === null) {
+          return "A correct option must be selected for each objective question.";
+        }
+      }
+    }
+    return "";
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Quiz Created!");
-    console.log("Quiz submitted:", questions);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    // Validate questions
+    const validationError = validateQuestions();
+    if (validationError) {
+      setErrorMessage(validationError);
+      setIsSubmitting(false);
+      return;
+    }
+
+    const form = e.target;
+    const title = form.title.value.trim();
+    const description = form.description.value.trim();
+    const date = form.date.value;
+    const duration = parseInt(form.duration.value);
+
+    // Validate form fields
+    if (!title) {
+      setErrorMessage("Quiz title is required.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!date) {
+      setErrorMessage("Quiz date is required.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (isNaN(duration) || duration <= 0) {
+      setErrorMessage("Valid time limit (in minutes) is required.");
+      setIsSubmitting(false);
+      return;
+    }
+    if (!userData?.id) {
+      setErrorMessage("User is not authenticated.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // // Verify authenticated user
+      // const { data: { user }, error: authError } = await supabase.auth.getUser();
+      // if (authError || !user || user.id !== userData.id) {
+      //   console.error("Authentication error:", JSON.stringify(authError || "User ID mismatch", null, 2));
+      //   throw new Error("Authentication failed. Please log in again.");
+      // }
+
+      // 1. Insert into quizzes
+      const { data: quizInsertData, error: quizInsertError } = await supabase
+        .from("quizzes")
+        .insert([
+          {
+            title,
+            description,
+            date,
+            time_limit: duration,
+            teacher_id: userData.id,
+          },
+        ])
+        .select("quiz_id");
+
+      if (quizInsertError) {
+        console.error(
+          "Quiz insert error:",
+          JSON.stringify(quizInsertError, null, 2)
+        );
+        throw new Error(`Failed to insert quiz: ${quizInsertError.message}`);
+      }
+
+      if (
+        !quizInsertData ||
+        quizInsertData.length === 0 ||
+        !quizInsertData[0].quiz_id
+      ) {
+        console.error(
+          "No quiz data returned:",
+          JSON.stringify(quizInsertData, null, 2)
+        );
+        throw new Error("Failed to retrieve inserted quiz ID.");
+      }
+
+      const quizId = quizInsertData && quizInsertData[0].quiz_id;
+      console.log("Inserted quiz ID:", quizId);
+
+      // 2. Insert into questions
+      const questionsToInsert = questions.map((q) => ({
+        quiz_id: quizId,
+        question_text: q.question_text.trim(),
+        question_type: q.question_type,
+        marks: parseInt(q.marks),
+      }));
+
+      const { data: insertedQuestions, error: questionsInsertError } =
+        await supabase
+          .from("questions")
+          .insert(questionsToInsert)
+          .select();
+
+      if (questionsInsertError) {
+        console.error(
+          "Questions insert error:",
+          JSON.stringify(questionsInsertError, null, 2)
+        );
+        throw new Error(
+          `Failed to insert questions: ${questionsInsertError.message}`
+        );
+      }
+
+      if (!insertedQuestions || insertedQuestions.length === 0) {
+        console.error(
+          "No questions data returned:",
+          JSON.stringify(insertedQuestions, null, 2)
+        );
+        throw new Error("Failed to retrieve inserted questions.");
+      }
+
+      // 3. Insert into options
+      const optionsToInsert = [];
+      insertedQuestions.forEach((insertedQ, idx) => {
+        const originalQ = questions[idx];
+        if (originalQ.question_type === "objective") {
+          originalQ.options.forEach((optText, optIdx) => {
+            optionsToInsert.push({
+              question_id: insertedQ.question_id,
+              option_text: optText.trim(),
+              is_correct: optIdx === originalQ.correctOption,
+            });
+          });
+        }
+      });
+
+      if (optionsToInsert.length > 0) {
+        const { error: optionsInsertError } = await supabase
+          .from("options")
+          .insert(optionsToInsert);
+        if (optionsInsertError) {
+          console.error(
+            "Options insert error:",
+            JSON.stringify(optionsInsertError, null, 2)
+          );
+          throw new Error(
+            `Failed to insert options: ${optionsInsertError.message}`
+          );
+        }
+      }
+
+      alert("Quiz created successfully!");
+      // Reset form after successful submission
+      form.reset();
+      setQuestions([]);
+      setQuestionId(1);
+    } catch (error) {
+      console.error("Quiz creation error:", JSON.stringify(error, null, 2));
+      setErrorMessage(
+        error.message ||
+          "Failed to create quiz. Please check the console for details."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,6 +251,12 @@ const CreateQuizForm = () => {
         <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-4 text-blue-600 flex items-center justify-center">
           Create New Quiz
         </h2>
+
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+            {errorMessage}
+          </div>
+        )}
 
         <label className="block font-medium text-sm sm:text-base mt-4">
           Quiz Title
@@ -85,7 +277,6 @@ const CreateQuizForm = () => {
           className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
           placeholder="Brief description..."
           rows="3"
-          required
         ></textarea>
 
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -109,15 +300,14 @@ const CreateQuizForm = () => {
               name="duration"
               className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
               placeholder="e.g. 30"
+              min="1"
               required
             />
           </div>
         </div>
 
         <div className="mt-6">
-          <h3 className="text-base sm:text-lg font-semibold mb-2">
-            Questions
-          </h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Questions</h3>
           {questions.map((q, idx) => (
             <div key={q.id} className="bg-gray-50 p-4 rounded mb-3 border">
               <label className="block font-medium text-sm sm:text-base">
@@ -127,8 +317,10 @@ const CreateQuizForm = () => {
                 type="text"
                 className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
                 placeholder="Enter the question"
-                value={q.text}
-                onChange={(e) => handleChange(q.id, "text", e.target.value)}
+                value={q.question_text}
+                onChange={(e) =>
+                  handleChange(q.id, "question_text", e.target.value)
+                }
                 required
               />
 
@@ -139,8 +331,10 @@ const CreateQuizForm = () => {
                   </label>
                   <select
                     className="w-full p-2 sm:p-3 mt-1 border rounded text-sm sm:text-base"
-                    value={q.type}
-                    onChange={(e) => handleChange(q.id, "type", e.target.value)}
+                    value={q.question_type}
+                    onChange={(e) =>
+                      handleChange(q.id, "question_type", e.target.value)
+                    }
                   >
                     <option value="objective">Objective</option>
                     <option value="subjective">Subjective</option>
@@ -158,12 +352,13 @@ const CreateQuizForm = () => {
                     onChange={(e) =>
                       handleChange(q.id, "marks", e.target.value)
                     }
+                    min="1"
                     required
                   />
                 </div>
               </div>
 
-              {q.type === "objective" && (
+              {q.question_type === "objective" && (
                 <div className="mt-3">
                   <label className="block font-medium text-sm sm:text-base">
                     Options
@@ -176,6 +371,7 @@ const CreateQuizForm = () => {
                         checked={q.correctOption === optIdx}
                         onChange={() => handleCorrectOptionChange(q.id, optIdx)}
                         className="mr-2"
+                        required={q.question_type === "objective"}
                       />
                       <input
                         type="text"
@@ -213,9 +409,10 @@ const CreateQuizForm = () => {
 
         <button
           type="submit"
-          className="mt-6 text-base sm:text-xl w-full bg-blue-600 font-semibold text-white py-2 sm:py-3 rounded-xl"
+          className="mt-6 text-base sm:text-xl w-full bg-blue-600 font-semibold text-white py-2 sm:py-3 rounded-xl disabled:bg-gray-400"
+          disabled={isSubmitting}
         >
-          Create Quiz
+          {isSubmitting ? "Creating..." : "Create Quiz"}
         </button>
       </form>
     </div>
