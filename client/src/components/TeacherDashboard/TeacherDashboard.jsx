@@ -10,7 +10,7 @@ import StudentSubmissions from "./StudentSubmissions";
 import { LoginContext } from "../../context/LoginContext";
 
 const TeacherDashboard = () => {
-  const {loggedIn,setLoggedIn,userData}=useContext(LoginContext)
+  const { loggedIn, setLoggedIn, userData } = useContext(LoginContext);
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
 
@@ -19,7 +19,7 @@ const TeacherDashboard = () => {
       let { data: quizzes, error } = await supabase
         .from("quizzes")
         .select("*")
-        .eq("teacher_id",userData.id);
+        .eq("teacher_id", userData.id);
 
       setQuizzes(quizzes);
     };
@@ -33,6 +33,7 @@ const TeacherDashboard = () => {
         quizTitle={list.title}
         quizDuration={list.time_limit}
         quizDate={list.date}
+        id={list.quiz_id}
       />
     );
   };
@@ -53,7 +54,6 @@ const TeacherDashboard = () => {
           >
             + Create New Quiz
           </button>
-          
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
           {quizzes && quizzes.map(createManageQuizCards)}
