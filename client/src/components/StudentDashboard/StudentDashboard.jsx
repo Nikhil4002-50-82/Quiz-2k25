@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import supabase from "../../../utils/supabase";
 import StudentHeader from "./StudentHeader";
 import AvailableQuizzes from "./AvailableQuizzes";
 import StudentFooter from "./StudentFooter";
 import PerformanceReportComp from "./PerformanceReportComp";
 
+import { LoginContext } from "../../context/LoginContext";
+
 const StudentDashboard = () => {
+  const { loggedIn, setLoggedIn } = useContext(LoginContext);
+
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [options, setOptions] = useState([]);
@@ -81,40 +85,44 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="bg-gray-200 min-h-screen w-full">
-      <StudentHeader />
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10 text-black">
-        <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
-          Available Quizzes
-        </h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
-          {quizzes.map(createQuizzes)}
-        </div>
-      </div>
-      <div className="px-4 sm:px-6 md:px-8 lg:px-10 pb-10 text-black">
-        <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
-          Performance Reports
-        </h1>
-        <div className="overflow-x-auto">
-          <div className="font-semibold text-sm sm:text-base md:text-lg grid grid-cols-[3fr_2fr_2fr] sm:grid-cols-[5fr_3fr_3fr] bg-purple-600 text-white rounded-t-lg">
-            <h1 className="p-2 sm:p-3 md:p-4">Quiz</h1>
-            <p className="p-2 sm:p-3 md:p-4">Score</p>
-            <p className="p-2 sm:p-3 md:p-4">Status</p>
+    <>
+      {loggedIn && (
+        <div className="bg-gray-200 min-h-screen w-full">
+          <StudentHeader />
+          <div className="p-4 sm:p-6 md:p-8 lg:p-10 text-black">
+            <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
+              Available Quizzes
+            </h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
+              {quizzes.map(createQuizzes)}
+            </div>
           </div>
-          <PerformanceReportComp
-            quizTitle="Maths Quiz"
-            quizScore="3/10"
-            quizResult="Failed"
-          />
-          <PerformanceReportComp
-            quizTitle="Maths Quiz"
-            quizScore="10/10"
-            quizResult="Passed"
-          />
+          <div className="px-4 sm:px-6 md:px-8 lg:px-10 pb-10 text-black">
+            <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
+              Performance Reports
+            </h1>
+            <div className="overflow-x-auto">
+              <div className="font-semibold text-sm sm:text-base md:text-lg grid grid-cols-[3fr_2fr_2fr] sm:grid-cols-[5fr_3fr_3fr] bg-purple-600 text-white rounded-t-lg">
+                <h1 className="p-2 sm:p-3 md:p-4">Quiz</h1>
+                <p className="p-2 sm:p-3 md:p-4">Score</p>
+                <p className="p-2 sm:p-3 md:p-4">Status</p>
+              </div>
+              <PerformanceReportComp
+                quizTitle="Maths Quiz"
+                quizScore="3/10"
+                quizResult="Failed"
+              />
+              <PerformanceReportComp
+                quizTitle="Maths Quiz"
+                quizScore="10/10"
+                quizResult="Passed"
+              />
+            </div>
+          </div>
+          <StudentFooter />
         </div>
-      </div>
-      <StudentFooter />
-    </div>
+      )}
+    </>
   );
 };
 

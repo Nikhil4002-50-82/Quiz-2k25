@@ -1,14 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import supabase from "../../../utils/supabase";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "./HomeHeader";
 import HomeFooter from "./HomeFooter";
 
+import { LoginContext } from "../../context/LoginContext";
+
 const AuthComponent = () => {
+  const { loggedIn, setLoggedIn, setUserData } = useContext(LoginContext);
+
   const [mode, setMode] = useState("login");
   const [role, setRole] = useState("student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [becNo, setBecNo] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -23,21 +28,32 @@ const AuthComponent = () => {
       return;
     }
 
-    if (!email.trim() || !password.trim()) {
-      setError("Please fill in all required fields.");
+    if (role === "student" && !becNo.trim()) {
+      setError("BEC Number is required.");
+      return;
+    }
+
+    if (role === "teacher" && !email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Password is required.");
       return;
     }
 
     const table = role === "student" ? "students" : "teachers";
 
     if (mode === "signup") {
-      const { data, error: insertError } = await supabase.from(table).insert([
-        {
-          email,
-          name,
-          password,
-        },
-      ]);
+      const insertData =
+        role === "student"
+          ? { bec_no: becNo, name, password }
+          : { email, name, password };
+
+      const { data, error: insertError } = await supabase
+        .from(table)
+        .insert([insertData]);
 
       if (insertError) {
         setError(insertError.message);
@@ -46,17 +62,29 @@ const AuthComponent = () => {
 
       alert(`Signed up successfully as ${role}`);
     } else {
-      const { data, error: loginError } = await supabase
+      const query = supabase
         .from(table)
         .select("*")
-        .eq("email", email)
+        .eq(
+          role === "student" ? "bec_no" : "email",
+          role === "student" ? becNo : email
+        )
         .eq("password", password)
         .single();
 
+      const { data, error: loginError } = await query;
+
       if (loginError || !data) {
-        setError("Invalid email or password.");
+        setError("Invalid credentials.");
         return;
       }
+      setLoggedIn(true);
+      setUserData({
+        role,
+        ...(role === "student"
+          ? {id:data.student_id, name: data.name, bec_no: data.bec_no }
+          : {id:data.teacher_id, name: data.name, email: data.email }),
+      });
 
       alert(`Logged in successfully as ${role}`);
       navigate(role === "student" ? "/student" : "/teacher");
@@ -64,9 +92,9 @@ const AuthComponent = () => {
   };
 
   return (
-    <div className="bg-gray-200  flex flex-col">
+    <div className="bg-gray-200 flex flex-col">
       <HomeHeader />
-      <div className=" grid grid-cols-1 md:grid-cols-[6fr_4fr] md:gap-10 p-2 sm:p-4 lg:p-6 xl:p-8">
+      <div className="grid grid-cols-1 md:grid-cols-[6fr_4fr] md:gap-10 p-2 sm:p-4 lg:p-6 xl:p-8">
         <div
           className={`w-full h-80 md:h-full ${
             mode === "login"
@@ -140,19 +168,35 @@ const AuthComponent = () => {
                 </div>
               )}
 
-              <div className="mb-3 sm:mb-4">
-                <label className="block mb-1 text-xs sm:text-sm font-medium">
-                  Email ID
-                </label>
-                <input
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
-                  placeholder="Enter your ID"
-                  required
-                />
-              </div>
+              {role === "student" ? (
+                <div className="mb-3 sm:mb-4">
+                  <label className="block mb-1 text-xs sm:text-sm font-medium">
+                    BEC Number
+                  </label>
+                  <input
+                    type="text"
+                    value={becNo}
+                    onChange={(e) => setBecNo(e.target.value)}
+                    className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
+                    placeholder="Enter your BEC Number"
+                    required
+                  />
+                </div>
+              ) : (
+                <div className="mb-3 sm:mb-4">
+                  <label className="block mb-1 text-xs sm:text-sm font-medium">
+                    Email ID
+                  </label>
+                  <input
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
+                    placeholder="Enter your ID"
+                    required
+                  />
+                </div>
+              )}
 
               <div className="mb-3 sm:mb-4 relative">
                 <label className="block mb-1 text-xs sm:text-sm font-medium">

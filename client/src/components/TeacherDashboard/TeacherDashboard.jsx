@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../../utils/supabase";
 
@@ -7,7 +7,10 @@ import TeacherFooter from "./TeacherFooter";
 import ManageQuizzes from "./ManageQuizzes";
 import StudentSubmissions from "./StudentSubmissions";
 
+import { LoginContext } from "../../context/LoginContext";
+
 const TeacherDashboard = () => {
+  const {loggedIn,setLoggedIn,userData}=useContext(LoginContext)
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
 
@@ -16,7 +19,7 @@ const TeacherDashboard = () => {
       let { data: quizzes, error } = await supabase
         .from("quizzes")
         .select("*")
-        .eq("teacher_id", 1);
+        .eq("teacher_id",userData.id);
 
       setQuizzes(quizzes);
     };

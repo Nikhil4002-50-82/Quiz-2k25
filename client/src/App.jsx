@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import StudentDashboard from "./components/StudentDashboard/StudentDashboard";
@@ -7,18 +7,26 @@ import NewQuiz from "./components/TeacherDashboard/NewQuiz";
 import AttemptQuiz from "./components/StudentDashboard/AttemptQuiz";
 import AuthComponent from "./components/Home/AuthComponent";
 
+import { LoginContext } from "./context/LoginContext";
+
 const App = () => {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
   return (
     <div className="font-edu">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AuthComponent />} />
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/teacher" element={<TeacherDashboard />} />
-          <Route path="/newQuiz" element={<NewQuiz />} />
-          <Route path="/attemptQuiz" element={<AttemptQuiz />} />
-        </Routes>
-      </BrowserRouter>
+      <LoginContext.Provider
+        value={{ loggedIn, setLoggedIn, userData, setUserData }}
+      >
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AuthComponent />} />
+            <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/teacher" element={<TeacherDashboard />} />
+            <Route path="/newQuiz" element={<NewQuiz />} />
+            <Route path="/attemptQuiz" element={<AttemptQuiz />} />
+          </Routes>
+        </BrowserRouter>
+      </LoginContext.Provider>
     </div>
   );
 };
