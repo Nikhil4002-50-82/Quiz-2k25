@@ -8,7 +8,7 @@ import PerformanceReportComp from "./PerformanceReportComp";
 import { LoginContext } from "../../context/LoginContext";
 
 const StudentDashboard = () => {
-  const { loggedIn, setLoggedIn,userData } = useContext(LoginContext);
+  const { loggedIn, setLoggedIn, userData } = useContext(LoginContext);
 
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -50,7 +50,10 @@ const StudentDashboard = () => {
               text: q.question_text,
               type: q.question_type || "objective",
               marks: 1,
-              options: qOptions.map((opt) => opt.option_text),
+              options: qOptions.map((opt) => ({
+                option_id: opt.option_id,
+                option_text: opt.option_text,
+              })),
               correctOption: qOptions.findIndex(
                 (opt) => opt.is_correct === true
               ),
@@ -85,7 +88,7 @@ const StudentDashboard = () => {
       />
     );
   };
-if (!userData) return <div className="text-center mt-10">Loading...</div>;
+  if (!userData) return <div className="text-center mt-10">Loading...</div>;
   return (
     <>
       {loggedIn && (

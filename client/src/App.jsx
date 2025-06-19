@@ -8,6 +8,7 @@ import AttemptQuiz from "./components/StudentDashboard/AttemptQuiz";
 import AuthComponent from "./components/Home/AuthComponent";
 
 import { LoginContext } from "./context/LoginContext";
+import ReviewStudentAttempt from "./components/TeacherDashboard/ReviewStudentAttempt";
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -30,28 +31,11 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<AuthComponent />} />
-            <Route
-              path="/student"
-              element={
-                loggedIn && userData?.role === "student" ? (
-                  <StudentDashboard />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
-            <Route
-              path="/teacher"
-              element={
-                loggedIn && userData?.role === "teacher" ? (
-                  <TeacherDashboard />
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              }
-            />
+            <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/teacher" element={<TeacherDashboard />} />
             <Route path="/newQuiz" element={<NewQuiz />} />
             <Route path="/attemptQuiz" element={<AttemptQuiz />} />
+             <Route path="/teacher/review" element={<ReviewStudentAttempt />} />
           </Routes>
         </BrowserRouter>
       </LoginContext.Provider>

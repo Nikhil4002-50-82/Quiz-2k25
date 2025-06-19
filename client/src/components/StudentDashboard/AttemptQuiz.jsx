@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import supabase from "../../../utils/supabase";
 import StudentHeader from "./StudentHeader";
 import StudentFooter from "./StudentFooter";
+import { LoginContext } from "../../context/LoginContext";
 
 const AttemptQuiz = () => {
+  const { userData } = useContext(LoginContext);
   const navigate = useNavigate();
   const location = useLocation();
   const quizData = location.state?.quizData;
@@ -16,11 +19,11 @@ const AttemptQuiz = () => {
     if (quizData) {
       setTimeLeft(quizData.duration * 60);
     }
+    console.log(quizData);
   }, [quizData]);
 
   useEffect(() => {
     if (!quizData) return;
-
     if (timeLeft != null && timeLeft <= 0 && !isSubmitted) {
       handleSubmit();
       return;
@@ -38,11 +41,54 @@ const AttemptQuiz = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setIsSubmitted(true);
-    alert("Quiz Submitted!");
-    console.log("User answers:", answers);
+
+    const student_id = userData.id;
+    const quiz_id = quizData.quiz_id;
+    const date_of_submission = new Date().toISOString();
+    const responseEntries = [];
+
+    quizData.questions.forEach((q) => {
+      const selected = answers[q.id];
+      const isObjective = q.type === "objective";
+
+      let mark_obtained = 0;
+      let answer_text = null;
+      let selected_option_id = null;
+
+      if (isObjective) {
+        selected_option_id = parseInt(selected);
+        const correctOptionId = q.options[q.correctOption]?.option_id;
+        const isCorrect = selected_option_id === correctOptionId;
+        mark_obtained = isCorrect ? q.marks : 0;
+      } else {
+        answer_text = selected || "";
+      }
+
+      responseEntries.push({
+        student_id,
+        quiz_id,
+        question_id: q.id,
+        selected_option_id: isObjective ? selected_option_id : null,
+        answer_text,
+        date_of_submission,
+        mark_obtained,
+      });
+    });
+
+    const { data, error } = await supabase
+      .from("student_response")
+      .insert(responseEntries);
+
+    if (error) {
+      console.error("Error submitting:", error.message);
+      alert("Submission failed.");
+    } else {
+      alert("Quiz submitted successfully!");
+      navigate("/student");
+    }
   };
 
   const formatTime = (seconds) => {
@@ -94,26 +140,25 @@ const AttemptQuiz = () => {
 
                     {q.type === "objective" ? (
                       <div className="mt-2 sm:mt-3">
-                        {q.options.map((option, optIdx) => (
+                        {q.options.map((option) => (
                           <div
-                            key={optIdx}
-                            className="flex items-center gap-2 mb-1 sm:mb-2"
+                            key={option.option_id}
+                            className="flex items-center gap-2 mb-2"
                           >
                             <input
                               type="radio"
                               name={`question-${q.id}`}
-                              value={optIdx}
-                              checked={answers[q.id] === optIdx.toString()}
+                              value={option.option_id}
+                              checked={
+                                answers[q.id] === String(option.option_id)
+                              }
                               onChange={(e) =>
                                 handleAnswerChange(q.id, e.target.value)
                               }
-                              className="mr-1 sm:mr-2"
-                              disabled={isSubmitted}
                               required
+                              disabled={isSubmitted}
                             />
-                            <span className="text-sm sm:text-base">
-                              {option}
-                            </span>
+                            <span>{option.option_text}</span>
                           </div>
                         ))}
                       </div>
@@ -121,13 +166,13 @@ const AttemptQuiz = () => {
                       <textarea
                         className="w-full p-2 mt-2 sm:mt-3 border rounded text-sm sm:text-base"
                         placeholder="Enter your answer..."
-                        rows="3 sm:rows-4"
+                        rows="3"
                         value={answers[q.id] || ""}
                         onChange={(e) =>
                           handleAnswerChange(q.id, e.target.value)
                         }
-                        disabled={isSubmitted}
                         required
+                        disabled={isSubmitted}
                       />
                     )}
                   </div>
@@ -138,9 +183,6 @@ const AttemptQuiz = () => {
                 type="submit"
                 className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl w-full bg-purple-600 font-semibold text-white py-2 sm:py-3 rounded-xl disabled:bg-gray-400"
                 disabled={isSubmitted}
-                onClick={() => {
-                  navigate("/student");
-                }}
               >
                 Submit Quiz
               </button>

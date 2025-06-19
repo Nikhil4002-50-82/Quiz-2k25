@@ -13,6 +13,9 @@ const TeacherDashboard = () => {
   const { loggedIn, setLoggedIn, userData } = useContext(LoginContext);
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [totalScore, setTotalScore] = useState(0);
 
   const deleteQuiz = async (quizId) => {
     const { error } = await supabase
@@ -28,23 +31,58 @@ const TeacherDashboard = () => {
   };
 
   useEffect(() => {
-    if (!userData) return; // Guard clause to avoid crash on initial null
+    if (!userData) return;
 
-    const getQuizMetaData = async () => {
-      const { data: quizzes, error } = await supabase
+    const fetchData = async () => {
+      const { data: quizzesData, error: quizError } = await supabase
         .from("quizzes")
         .select("*")
         .eq("teacher_id", userData.id);
 
-      if (error) {
-        console.error("Error fetching quizzes:", error.message);
+      if (quizError) {
+        console.error("Error fetching quizzes:", quizError.message);
+      } else {
+        setQuizzes(quizzesData);
       }
 
-      setQuizzes(quizzes);
+      const { data: responses, error: responseError } = await supabase
+        .from("student_response")
+        .select(`
+          *,
+          quizzes:quiz_id (title, teacher_id),
+          profiles:student_id (name),
+          questions:question_id (question_type, marks)
+        `);
+
+      if (responseError) {
+        console.error(
+          "Error fetching student responses:",
+          responseError.message
+        );
+        return;
+      }
+
+      const filtered = responses.filter(
+        (r) => r.quizzes?.teacher_id === userData.id
+      );
+
+      const allQuestions = await supabase.from("questions").select("*");
+      setQuestions(allQuestions.data || []);
+
+      const unique = Array.from(
+        new Map(
+          filtered.map((entry) => [
+            `${entry.student_id}-${entry.quiz_id}`,
+            entry,
+          ])
+        ).values()
+      );
+
+      setSubmissions(unique);
     };
 
-    getQuizMetaData();
-  }, [userData]); // Now re-runs when userData is populated
+    fetchData();
+  }, [userData]);
 
   const createManageQuizCards = (list) => {
     return (
@@ -59,18 +97,53 @@ const TeacherDashboard = () => {
     );
   };
 
-  if (!userData) return <div className="text-center mt-10">Loading...</div>;
+  const checkIfGraded = (student_id, quiz_id) => {
+    const studentResponses = submissions.filter(
+      (s) => s.student_id === student_id && s.quiz_id === quiz_id
+    );
+
+    const subjectiveQ = questions.filter(
+      (q) => q.quiz_id === quiz_id && q.question_type === "subjective"
+    );
+
+    for (let sq of subjectiveQ) {
+      const match = studentResponses.find(
+        (s) => s.question_id === sq.question_id
+      );
+      if (
+        match &&
+        (match.mark_obtained === null || match.mark_obtained === undefined)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleActionClick = (student_id, quiz_id) => {
+    navigate("/teacher/review", {
+      state: {
+        student_id,
+        quiz_id,
+      },
+    });
+  };
+
+  if (!userData)
+    return (
+      <div className="text-center mt-10 text-base sm:text-lg">Loading...</div>
+    );
 
   return (
-    <div className="bg-gray-200 min-h-screen">
+    <div className="bg-gray-200 min-h-screen flex flex-col">
       <TeacherHeader />
       <div className="p-4 sm:p-6 md:p-8 lg:p-10 text-black">
         <div className="flex flex-col sm:flex-row items-center justify-between mb-4 sm:mb-6">
-          <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-0">
+          <h1 className="font-semibold text-lg sm:text-xl md:text-2xl lg:text-3xl mb-4 sm:mb-0">
             Manage Quizzes
           </h1>
           <button
-            className="text-white font-semibold bg-blue-600 py-2 px-4 sm:px-6 rounded-lg text-sm sm:text-base"
+            className="text-white font-semibold bg-blue-600 py-2 px-4 sm:px-6 rounded-lg text-sm sm:text-base w-full sm:w-auto"
             onClick={(e) => {
               e.preventDefault();
               navigate("/newQuiz");
@@ -79,35 +152,34 @@ const TeacherDashboard = () => {
             + Create New Quiz
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {quizzes && quizzes.map(createManageQuizCards)}
         </div>
       </div>
 
       <div className="px-4 sm:px-6 md:px-8 lg:px-10 pb-10 text-black">
-        <h1 className="font-semibold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6">
+        <h1 className="font-semibold text-lg sm:text-xl md:text-2xl lg:text-3xl mb-4 sm:mb-6">
           Student Submissions
         </h1>
-        <div className="overflow-x-auto">
-          <div className="font-semibold text-sm sm:text-base md:text-lg grid grid-cols-[3fr_3fr_2fr_2fr] sm:grid-cols-[5fr_5fr_3fr_3fr] bg-blue-600 text-white rounded-t-lg">
+        <div className="overflow-x-auto rounded-lg shadow-lg">
+          <div className="font-semibold text-xs sm:text-sm md:text-base grid grid-cols-[3fr_3fr_2fr_2fr] sm:grid-cols-[4fr_4fr_3fr_2fr] md:grid-cols-[5fr_5fr_3fr_3fr] bg-blue-600 text-white rounded-t-lg">
             <h1 className="p-2 sm:p-3 md:p-4">Student</h1>
             <h1 className="p-2 sm:p-3 md:p-4">Quiz</h1>
             <p className="p-2 sm:p-3 md:p-4">Score</p>
             <p className="p-2 sm:p-3 md:p-4">Action</p>
           </div>
-          {/* You can fetch and map real submissions here */}
-          <StudentSubmissions
-            student="Nikhil"
-            quizTitle="Maths Quiz"
-            quizScore="9/10"
-            quizAction="Graded"
-          />
-          <StudentSubmissions
-            student="Varshini"
-            quizTitle="Maths Quiz"
-            quizScore="9/10"
-            quizAction="Grade"
-          />
+          {submissions.map((s, idx) => (
+            <StudentSubmissions
+              key={`${s.student_id}-${s.quiz_id}`}
+              student={s.profiles?.name || s.student_id}
+              quizTitle={s.quizzes?.title || s.quiz_id}
+              quizScore={`Evaluated`} // optional: fetch & calculate actual score
+              quizAction={
+                checkIfGraded(s.student_id, s.quiz_id) ? "View Report" : "Grade"
+              }
+              onClick={() => handleActionClick(s.student_id, s.quiz_id)}
+            />
+          ))}
         </div>
       </div>
 
