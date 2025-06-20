@@ -1,7 +1,6 @@
+# QuizMaster-2k25
 
-# QuizMaster-2k25 
-
-**QuizMaster-2k25** is a full-stack web application designed for educational institutions to manage, conduct, and evaluate quizzes online. Teachers can create and manage quizzes, while students can take quizzes, track performance, and receive instant feedback.
+**QuizMaster-2k25** is a full-stack web application designed to streamline quiz management and evaluation in educational institutions. It empowers faculty to create and manage quizzes and offers students a centralized platform to take quizzes, track performance, and get instant feedback.
 
 > Built with React, Supabase, and TailwindCSS
 
@@ -9,22 +8,28 @@
 
 ## Features
 
-### For Teachers
-- Secure authentication using Supabase
-- Create quizzes with dynamic questions and options
-- Set quiz duration and schedule
-- View student performance reports
+### Faculty Panel
 
-### For Students
-- View all available quizzes
-- Attempt quizzes with a real-time timer
-- Auto-submit on time completion
-- View scores and quiz status instantly
+- Secure login with role-based access
+- Dashboard for managing student accounts and quizzes
+- Create quizzes with metadata (title, description, date, time limit)
+- Add both objective and subjective questions
+- Real-time access to student submissions
+- Manual grading for subjective responses
+- Downloadable performance reports
 
-### Performance Dashboard
-- Track quiz history
-- Analyze passed/failed status
-- View scores in a clean tabular format
+### Student Panel
+
+- Secure login with role-based access
+- Dashboard listing all available quizzes
+- Attempt quizzes with real-time timer
+- Auto-submission on time completion
+- View scores and performance reports post submission
+
+### Grading System
+
+- Auto-grading for objective questions
+- Manual grading for subjective answers
 
 ---
 
@@ -36,33 +41,26 @@
    cd quizmaster-2k25
    ```
 
-2. **Install Dependencies**
+2. **Navigate to Client**
+   ```bash
+   cd client
+   ```
+
+3. **Install Dependencies**
    ```bash
    npm install
    ```
 
-3. **Create `.env` File**
+4. **Create `.env` File**
    ```
    VITE_SUPABASE_URL=your-supabase-url
    VITE_SUPABASE_KEY=your-supabase-anon-key
    ```
 
-4. **Start the App**
+5. **Start the App**
    ```bash
-   npm run dev
+   npm start
    ```
-
----
-
-## Contribution
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature-name`)
-3. Commit your changes (`git commit -am 'Add feature'`)
-4. Push to the branch (`git push origin feature-name`)
-5. Open a Pull Request
 
 ---
 
@@ -77,4 +75,4 @@ Contributions are welcome! Please follow these steps:
 ## Contact
 
 **Author:** Nikhil  
-Email: nikhil.4002.50.82 
+**Email:** nikhil.4002.50.82
