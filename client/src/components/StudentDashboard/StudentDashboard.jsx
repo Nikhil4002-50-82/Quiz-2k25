@@ -9,14 +9,6 @@ import { LoginContext } from "../../context/LoginContext";
 
 const StudentDashboard = () => {
   const { userData } = useContext(LoginContext);
-  if (!userData) {
-  return (
-    <div className="p-4 text-center text-lg sm:p-6 md:p-10">
-      Logging out...
-    </div>
-  );
-}
-
 
   const [quizzes, setQuizzes] = useState([]);
   const [questions, setQuestions] = useState([]);
