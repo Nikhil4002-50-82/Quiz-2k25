@@ -9,6 +9,7 @@ import AuthComponent from "./components/Home/AuthComponent";
 
 import { LoginContext } from "./context/LoginContext";
 import ReviewStudentAttempt from "./components/TeacherDashboard/ReviewStudentAttempt";
+import ViewReport from "./components/TeacherDashboard/ViewReport";
 
 const App = () => {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -35,7 +36,11 @@ const App = () => {
             <Route path="/teacher" element={<TeacherDashboard />} />
             <Route path="/newQuiz" element={<NewQuiz />} />
             <Route path="/attemptQuiz" element={<AttemptQuiz />} />
-             <Route path="/teacher/review" element={<ReviewStudentAttempt />} />
+            <Route path="/teacher/review" element={<ReviewStudentAttempt />} />
+            <Route
+              path="/teacher/report"
+              element={<ViewReport />}
+            />
           </Routes>
         </BrowserRouter>
       </LoginContext.Provider>

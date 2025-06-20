@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import html2pdf from "html2pdf.js";
 import supabase from "../../../utils/supabase";
 
 import TeacherHeader from "./TeacherHeader";
@@ -218,26 +217,6 @@ const ReviewStudentAttempt = () => {
               onClick={handleSubmitEvaluation}
             >
               Submit Evaluation
-            </button>
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-xl w-full sm:w-auto text-sm sm:text-base"
-              onClick={() => {
-                const element = printableRef.current;
-                const opt = {
-                  margin: 0.3,
-                  filename: `quiz-report-${student_id}.pdf`,
-                  image: { type: "jpeg", quality: 0.98 },
-                  html2canvas: { scale: 2 },
-                  jsPDF: {
-                    unit: "in",
-                    format: "letter",
-                    orientation: "portrait",
-                  },
-                };
-                html2pdf().from(element).set(opt).save();
-              }}
-            >
-              Download Quiz Report
             </button>
           </div>
         </div>

@@ -1,6 +1,12 @@
 import React from "react";
 
-const StudentSubmissions = ({ student, quizTitle, quizScore, quizAction, onClick }) => {
+const StudentSubmissions = ({
+  student,
+  quizTitle,
+  quizScore,
+  quizAction,
+  onClick,
+}) => {
   return (
     <div className="text-xs sm:text-sm md:text-base grid grid-cols-[3fr_3fr_2fr_2fr] sm:grid-cols-[4fr_4fr_3fr_2fr] md:grid-cols-[5fr_5fr_3fr_3fr] bg-white border-b last:border-b-0">
       <h1 className="p-2 sm:p-3 md:p-4 truncate">{student}</h1>
@@ -8,7 +14,10 @@ const StudentSubmissions = ({ student, quizTitle, quizScore, quizAction, onClick
       <p className="p-2 sm:p-3 md:p-4 text-xs sm:text-sm">{quizScore}</p>
       <div className="p-2 sm:p-3 md:p-4 flex items-center">
         {quizAction === "View Report" ? (
-          <span className="text-green-600 font-semibold text-xs sm:text-sm">
+          <span
+            onClick={onClick}
+            className="text-green-600 font-semibold text-xs sm:text-sm cursor-pointer"
+          >
             {quizAction}
           </span>
         ) : (

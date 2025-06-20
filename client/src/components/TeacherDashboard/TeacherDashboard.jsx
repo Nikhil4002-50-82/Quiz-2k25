@@ -13,9 +13,10 @@ const TeacherDashboard = () => {
   const { loggedIn, setLoggedIn, userData } = useContext(LoginContext);
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
+  const [submissions, setSubmissions] = useState([]); // for unique student-quiz rows
+  const [allResponses, setAllResponses] = useState([]); // for full student_response rows
   const [questions, setQuestions] = useState([]);
-  const [totalScore, setTotalScore] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const deleteQuiz = async (quizId) => {
     const { error } = await supabase
@@ -30,10 +31,13 @@ const TeacherDashboard = () => {
     }
   };
 
-  useEffect(() => {
-    if (!userData) return;
+ useEffect(() => {
+  if (!userData?.id) return; // Wait until userData is ready
 
-    const fetchData = async () => {
+  const fetchData = async () => {
+    setLoading(true); // Start loading when we begin fetching
+
+    try {
       const { data: quizzesData, error: quizError } = await supabase
         .from("quizzes")
         .select("*")
@@ -55,10 +59,7 @@ const TeacherDashboard = () => {
         `);
 
       if (responseError) {
-        console.error(
-          "Error fetching student responses:",
-          responseError.message
-        );
+        console.error("Error fetching student responses:", responseError.message);
         return;
       }
 
@@ -66,8 +67,7 @@ const TeacherDashboard = () => {
         (r) => r.quizzes?.teacher_id === userData.id
       );
 
-      const allQuestions = await supabase.from("questions").select("*");
-      setQuestions(allQuestions.data || []);
+      setAllResponses(filtered);
 
       const unique = Array.from(
         new Map(
@@ -77,28 +77,24 @@ const TeacherDashboard = () => {
           ])
         ).values()
       );
-
       setSubmissions(unique);
-    };
 
-    fetchData();
-  }, [userData]);
-
-  const createManageQuizCards = (list) => {
-    return (
-      <ManageQuizzes
-        key={list.quiz_id}
-        quizTitle={list.title}
-        quizDuration={list.time_limit}
-        quizDate={list.date}
-        id={list.quiz_id}
-        onDelete={deleteQuiz}
-      />
-    );
+      const allQuestions = await supabase.from("questions").select("*");
+      setQuestions(allQuestions.data || []);
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setLoading(false); // Done
+    }
   };
 
+  fetchData();
+}, [userData]);
+
+
+  // Check if all subjective questions are graded
   const checkIfGraded = (student_id, quiz_id) => {
-    const studentResponses = submissions.filter(
+    const studentResponses = allResponses.filter(
       (s) => s.student_id === student_id && s.quiz_id === quiz_id
     );
 
@@ -110,29 +106,48 @@ const TeacherDashboard = () => {
       const match = studentResponses.find(
         (s) => s.question_id === sq.question_id
       );
-      if (
-        match &&
-        (match.mark_obtained === null || match.mark_obtained === undefined)
-      ) {
+      if (!match || match.mark_obtained === null || match.mark_obtained === undefined) {
         return false;
       }
     }
+
     return true;
   };
 
-  const handleActionClick = (student_id, quiz_id) => {
-    navigate("/teacher/review", {
-      state: {
-        student_id,
-        quiz_id,
-      },
-    });
+  // Calculate total marks obtained
+  const calculateScore = (student_id, quiz_id) => {
+    const studentResponses = allResponses.filter(
+      (s) => s.student_id === student_id && s.quiz_id === quiz_id
+    );
+
+    const obtainedMarks = studentResponses
+      .map((res) => res.mark_obtained)
+      .filter((mark) => mark !== null && mark !== undefined)
+      .reduce((sum, mark) => sum + mark, 0);
+
+    const totalMarks = questions
+      .filter((q) => q.quiz_id === quiz_id)
+      .reduce((sum, q) => sum + q.marks, 0);
+
+    return `${obtainedMarks}/${totalMarks}`;
   };
 
-  if (!userData)
+  const handleActionClick = (student_id, quiz_id) => {
+  const isGraded = checkIfGraded(student_id, quiz_id);
+  navigate(isGraded ? "/teacher/report" : "/teacher/review", {
+    state: {
+      student_id,
+      quiz_id,
+    },
+  });
+};
+
+
+  if (loading) {
     return (
-      <div className="text-center mt-10 text-base sm:text-lg">Loading...</div>
+      <div className="p-4 text-center text-lg sm:p-6 md:p-10">Loading...</div>
     );
+  }
 
   return (
     <div className="bg-gray-200 min-h-screen flex flex-col">
@@ -153,7 +168,16 @@ const TeacherDashboard = () => {
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {quizzes && quizzes.map(createManageQuizCards)}
+          {quizzes && quizzes.map((quiz) => (
+            <ManageQuizzes
+              key={quiz.quiz_id}
+              quizTitle={quiz.title}
+              quizDuration={quiz.time_limit}
+              quizDate={quiz.date}
+              id={quiz.quiz_id}
+              onDelete={deleteQuiz}
+            />
+          ))}
         </div>
       </div>
 
@@ -168,14 +192,16 @@ const TeacherDashboard = () => {
             <p className="p-2 sm:p-3 md:p-4">Score</p>
             <p className="p-2 sm:p-3 md:p-4">Action</p>
           </div>
-          {submissions.map((s, idx) => (
+          {submissions.map((s) => (
             <StudentSubmissions
               key={`${s.student_id}-${s.quiz_id}`}
               student={s.profiles?.name || s.student_id}
               quizTitle={s.quizzes?.title || s.quiz_id}
-              quizScore={`Evaluated`} // optional: fetch & calculate actual score
+              quizScore={calculateScore(s.student_id, s.quiz_id)}
               quizAction={
-                checkIfGraded(s.student_id, s.quiz_id) ? "View Report" : "Grade"
+                checkIfGraded(s.student_id, s.quiz_id)
+                  ? "View Report"
+                  : "Grade"
               }
               onClick={() => handleActionClick(s.student_id, s.quiz_id)}
             />

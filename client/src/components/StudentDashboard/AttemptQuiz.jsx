@@ -65,6 +65,7 @@ const AttemptQuiz = () => {
         mark_obtained = isCorrect ? q.marks : 0;
       } else {
         answer_text = selected || "";
+        mark_obtained = null;
       }
 
       responseEntries.push({
