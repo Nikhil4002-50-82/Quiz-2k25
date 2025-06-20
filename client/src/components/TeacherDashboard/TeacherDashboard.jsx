@@ -32,7 +32,9 @@ const TeacherDashboard = () => {
   };
 
  useEffect(() => {
-  if (!userData?.id) return; // Wait until userData is ready
+  if (!userData?.id){
+      return;
+    } 
 
   const fetchData = async () => {
     setLoading(true); // Start loading when we begin fetching
@@ -141,6 +143,15 @@ const TeacherDashboard = () => {
     },
   });
 };
+  useEffect(() => {
+  if (loading) {
+    const timeout = setTimeout(() => {
+      window.location.reload();
+    }, 1000); // 4 seconds
+
+    return () => clearTimeout(timeout); // cleanup on unmount
+  }
+}, [loading]);
 
 
   if (loading) {
@@ -161,7 +172,7 @@ const TeacherDashboard = () => {
             className="text-white font-semibold bg-blue-600 py-2 px-4 sm:px-6 rounded-lg text-sm sm:text-base w-full sm:w-auto"
             onClick={(e) => {
               e.preventDefault();
-              navigate("/newQuiz");
+              navigate("/teacher/newQuiz");
             }}
           >
             + Create New Quiz

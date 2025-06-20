@@ -4,11 +4,11 @@ import html2pdf from "html2pdf.js";
 import supabase from "../../../utils/supabase";
 import { Bar, Pie } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
-import TeacherHeader from "./TeacherHeader";
-import TeacherFooter from "./TeacherFooter";
+import StudentHeader from "./StudentHeader";
+import StudentFooter from "./StudentFooter";
 Chart.register(...registerables);
 
-const ViewReport = () => {
+const ViewStudentReport = () => {
   const printableRef = useRef();
   const location = useLocation();
   const { student_id, quiz_id } = location.state || {};
@@ -162,14 +162,14 @@ const ViewReport = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
-      <TeacherHeader />
+      <StudentHeader />
       <main className="flex-grow p-2 sm:p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12">
         <div ref={printableRef} className="w-full mx-auto">
           {/* Quiz Details Card */}
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 grid grid-cols-[7fr_3fr]">
             <div className="">
               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 sm:mb-4">
-                <span className="text-blue-600">
+                <span className="text-purple-600">
                   {String(quiz.title || "Quiz Report")}
                 </span>{" "}
                 - <span className="text-gray-800">{String(studentName)}</span>
@@ -189,17 +189,13 @@ const ViewReport = () => {
                   <span className="font-semibold">Teacher:</span>{" "}
                   {String(teacherName)}
                 </p>
-                <p>
-                  <span className="font-semibold">Teacher ID:</span>{" "}
-                  {String(quiz.teacher_id || "N/A")}
-                </p>
               </div>
             
             </div>
             <div>
                 {/* Score Card */}
                 <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-blue-600 text-white rounded-full flex flex-col items-center justify-center text-center shadow-lg">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-purple-600 text-white rounded-full flex flex-col items-center justify-center text-center shadow-lg">
                     <p className="text-sm sm:text-base md:text-lg font-bold">
                       Score
                     </p>
@@ -274,7 +270,7 @@ const ViewReport = () => {
         {/* Download PDF Button */}
           <div className="text-center my-4 sm:my-6 md:my-8">
             <button
-              className="bg-blue-600  text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base md:text-lg hover:bg-blue-700 transition-colors w-full sm:w-full"
+              className="bg-purple-600  text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base md:text-lg transition-colors w-full sm:w-full"
               onClick={() => {
                 const element = printableRef.current;
                 const opt = {
@@ -300,8 +296,8 @@ const ViewReport = () => {
           <button
             className={`px-3 py-1 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg font-semibold text-xs sm:text-sm md:text-base ${
               chartType === "bar"
-                ? "bg-blue-600 text-white"
-                : "bg-white border border-blue-600 text-blue-600 hover:bg-blue-50"
+                ? "bg-purple-600 text-white"
+                : "bg-white border border-purple-600 text-purple-600 hover:bg-blue-50"
             }`}
             onClick={() => setChartType("bar")}
           >
@@ -310,8 +306,8 @@ const ViewReport = () => {
           <button
             className={`px-3 py-1 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-lg font-semibold text-xs sm:text-sm md:text-base ${
               chartType === "pie"
-                ? "bg-blue-600 text-white"
-                : "bg-white border border-blue-600 text-blue-600 hover:bg-blue-50"
+                ? "bg-purple-600 text-white"
+                : "bg-white border border-purple-600 text-purple-600 hover:bg-blue-50"
             }`}
             onClick={() => setChartType("pie")}
           >
@@ -371,9 +367,9 @@ const ViewReport = () => {
           )}
         </div>
       </main>
-      <TeacherFooter />
+      <StudentFooter />
     </div>
   );
 };
 
-export default ViewReport;
+export default ViewStudentReport;
