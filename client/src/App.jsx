@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import supabase from "../utils/supabase";
 
 import StudentDashboard from "./components/StudentDashboard/StudentDashboard";
 import TeacherDashboard from "./components/TeacherDashboard/TeacherDashboard";
@@ -17,12 +18,47 @@ const App = () => {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-    const user = JSON.parse(localStorage.getItem("userData"));
-    if (isLoggedIn && user) {
-      setLoggedIn(true);
-      setUserData(user);
-    }
+    const fetchSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (data?.session) {
+        const userId = data.session.user.id;
+
+        const student = await supabase
+          .from("students")
+          .select("*")
+          .eq("user_id", userId)
+          .single();
+
+        if (student.data) {
+          setLoggedIn(true);
+          setUserData({
+            role: "student",
+            id: student.data.student_id,
+            name: student.data.name,
+            bec_no: student.data.bec_no,
+          });
+          return;
+        }
+
+        const teacher = await supabase
+          .from("teachers")
+          .select("*")
+          .eq("user_id", userId)
+          .single();
+
+        if (teacher.data) {
+          setLoggedIn(true);
+          setUserData({
+            role: "teacher",
+            id: teacher.data.teacher_id,
+            name: teacher.data.name,
+            email: teacher.data.email,
+          });
+        }
+      }
+    };
+
+    fetchSession();
   }, []);
 
   return (
@@ -38,14 +74,8 @@ const App = () => {
             <Route path="/teacher/newQuiz" element={<NewQuiz />} />
             <Route path="/attemptQuiz" element={<AttemptQuiz />} />
             <Route path="/teacher/review" element={<ReviewStudentAttempt />} />
-            <Route
-              path="/teacher/report"
-              element={<ViewReport />}
-            />
-            <Route
-              path="/student/report"
-              element={<ViewStudentReport />}
-            />
+            <Route path="/teacher/report" element={<ViewReport />} />
+            <Route path="/student/report" element={<ViewStudentReport />} />
           </Routes>
         </BrowserRouter>
       </LoginContext.Provider>

@@ -10,11 +10,11 @@ import StudentSubmissions from "./StudentSubmissions";
 import { LoginContext } from "../../context/LoginContext";
 
 const TeacherDashboard = () => {
-  const { loggedIn, setLoggedIn, userData } = useContext(LoginContext);
+  const { userData, setLoggedIn, setUserData } = useContext(LoginContext);
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
-  const [submissions, setSubmissions] = useState([]); // for unique student-quiz rows
-  const [allResponses, setAllResponses] = useState([]); // for full student_response rows
+  const [submissions, setSubmissions] = useState([]);
+  const [allResponses, setAllResponses] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,53 +23,67 @@ const TeacherDashboard = () => {
       .from("quizzes")
       .delete()
       .eq("quiz_id", quizId);
-
-    if (error) {
-      console.error("Delete error:", error.message);
-    } else {
+    if (!error)
       setQuizzes((prev) => prev.filter((quiz) => quiz.quiz_id !== quizId));
-    }
   };
 
- useEffect(() => {
-  if (!userData?.id){
-      return;
-    } 
+  useEffect(() => {
+    const fetchSessionAndData = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  const fetchData = async () => {
-    setLoading(true); // Start loading when we begin fetching
-
-    try {
-      const { data: quizzesData, error: quizError } = await supabase
-        .from("quizzes")
-        .select("*")
-        .eq("teacher_id", userData.id);
-
-      if (quizError) {
-        console.error("Error fetching quizzes:", quizError.message);
-      } else {
-        setQuizzes(quizzesData);
-      }
-
-      const { data: responses, error: responseError } = await supabase
-        .from("student_response")
-        .select(`
-          *,
-          quizzes:quiz_id (title, teacher_id),
-          profiles:student_id (name),
-          questions:question_id (question_type, marks)
-        `);
-
-      if (responseError) {
-        console.error("Error fetching student responses:", responseError.message);
+      if (!session?.user) {
+        setLoggedIn(false);
+        setUserData(null);
+        navigate("/");
         return;
       }
 
-      const filtered = responses.filter(
-        (r) => r.quizzes?.teacher_id === userData.id
-      );
+      const { data: profile, error } = await supabase
+        .from("teachers")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
 
-      setAllResponses(filtered);
+      if (error || !profile) {
+        setLoggedIn(false);
+        setUserData(null);
+        navigate("/");
+        return;
+      }
+
+      const teacherData = {
+        id: profile.teacher_id,
+        name: profile.name,
+        email: profile.email,
+        role: "teacher",
+      };
+
+      setLoggedIn(true);
+      setUserData(teacherData);
+
+      // Now fetch dashboard data
+      const [
+        { data: quizzesData },
+        { data: responses },
+        { data: questionsData },
+      ] = await Promise.all([
+        supabase
+          .from("quizzes")
+          .select("*")
+          .eq("teacher_id", profile.teacher_id),
+        supabase
+          .from("student_response")
+          .select(
+            `*, quizzes:quiz_id (title, teacher_id), profiles:student_id (name), questions:question_id (question_type, marks)`
+          ),
+        supabase.from("questions").select("*"),
+      ]);
+
+      const filtered = responses.filter(
+        (r) => r.quizzes?.teacher_id === profile.teacher_id
+      );
 
       const unique = Array.from(
         new Map(
@@ -79,22 +93,17 @@ const TeacherDashboard = () => {
           ])
         ).values()
       );
+
+      setQuizzes(quizzesData);
+      setAllResponses(filtered);
       setSubmissions(unique);
+      setQuestions(questionsData);
+      setLoading(false);
+    };
 
-      const allQuestions = await supabase.from("questions").select("*");
-      setQuestions(allQuestions.data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error.message);
-    } finally {
-      setLoading(false); // Done
-    }
-  };
+    fetchSessionAndData();
+  }, []);
 
-  fetchData();
-}, [userData]);
-
-
-  // Check if all subjective questions are graded
   const checkIfGraded = (student_id, quiz_id) => {
     const studentResponses = allResponses.filter(
       (s) => s.student_id === student_id && s.quiz_id === quiz_id
@@ -108,15 +117,17 @@ const TeacherDashboard = () => {
       const match = studentResponses.find(
         (s) => s.question_id === sq.question_id
       );
-      if (!match || match.mark_obtained === null || match.mark_obtained === undefined) {
+      if (
+        !match ||
+        match.mark_obtained === null ||
+        match.mark_obtained === undefined
+      ) {
         return false;
       }
     }
-
     return true;
   };
 
-  // Calculate total marks obtained
   const calculateScore = (student_id, quiz_id) => {
     const studentResponses = allResponses.filter(
       (s) => s.student_id === student_id && s.quiz_id === quiz_id
@@ -135,24 +146,11 @@ const TeacherDashboard = () => {
   };
 
   const handleActionClick = (student_id, quiz_id) => {
-  const isGraded = checkIfGraded(student_id, quiz_id);
-  navigate(isGraded ? "/teacher/report" : "/teacher/review", {
-    state: {
-      student_id,
-      quiz_id,
-    },
-  });
-};
-  useEffect(() => {
-  if (loading) {
-    const timeout = setTimeout(() => {
-      window.location.reload();
-    }, 1000); // 4 seconds
-
-    return () => clearTimeout(timeout); // cleanup on unmount
-  }
-}, [loading]);
-
+    const isGraded = checkIfGraded(student_id, quiz_id);
+    navigate(isGraded ? "/teacher/report" : "/teacher/review", {
+      state: { student_id, quiz_id },
+    });
+  };
 
   if (loading) {
     return (
@@ -179,16 +177,17 @@ const TeacherDashboard = () => {
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-          {quizzes && quizzes.map((quiz) => (
-            <ManageQuizzes
-              key={quiz.quiz_id}
-              quizTitle={quiz.title}
-              quizDuration={quiz.time_limit}
-              quizDate={quiz.date}
-              id={quiz.quiz_id}
-              onDelete={deleteQuiz}
-            />
-          ))}
+          {quizzes &&
+            quizzes.map((quiz) => (
+              <ManageQuizzes
+                key={quiz.quiz_id}
+                quizTitle={quiz.title}
+                quizDuration={quiz.time_limit}
+                quizDate={quiz.date}
+                id={quiz.quiz_id}
+                onDelete={deleteQuiz}
+              />
+            ))}
         </div>
       </div>
 
@@ -210,16 +209,13 @@ const TeacherDashboard = () => {
               quizTitle={s.quizzes?.title || s.quiz_id}
               quizScore={calculateScore(s.student_id, s.quiz_id)}
               quizAction={
-                checkIfGraded(s.student_id, s.quiz_id)
-                  ? "View Report"
-                  : "Grade"
+                checkIfGraded(s.student_id, s.quiz_id) ? "View Report" : "Grade"
               }
               onClick={() => handleActionClick(s.student_id, s.quiz_id)}
             />
           ))}
         </div>
       </div>
-
       <TeacherFooter />
     </div>
   );

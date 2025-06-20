@@ -3,11 +3,10 @@ import supabase from "../../../utils/supabase";
 import { useNavigate } from "react-router-dom";
 import HomeHeader from "./HomeHeader";
 import HomeFooter from "./HomeFooter";
-
 import { LoginContext } from "../../context/LoginContext";
 
 const AuthComponent = () => {
-  const { loggedIn, setLoggedIn, setUserData } = useContext(LoginContext);
+  const { setLoggedIn, setUserData } = useContext(LoginContext);
 
   const [mode, setMode] = useState("login");
   const [role, setRole] = useState("student");
@@ -23,35 +22,45 @@ const AuthComponent = () => {
     e.preventDefault();
     setError("");
 
-    if (mode === "signup" && name.trim() === "") {
-      setError("Name is required for signup.");
-      return;
-    }
-
-    if (role === "student" && !becNo.trim()) {
-      setError("BEC Number is required.");
-      return;
-    }
-
-    if (role === "teacher" && !email.trim()) {
-      setError("Email is required.");
-      return;
-    }
+    const authEmail =
+      role === "student" ? `${becNo}@student.quizapp.com` : email;
 
     if (!password.trim()) {
       setError("Password is required.");
       return;
     }
 
-    const table = role === "student" ? "students" : "teachers";
-
     if (mode === "signup") {
+      if (!name.trim()) {
+        setError("Name is required.");
+        return;
+      }
+      if (role === "student" && !becNo.trim()) {
+        setError("BEC Number is required.");
+        return;
+      }
+      if (role === "teacher" && !email.trim()) {
+        setError("Email is required.");
+        return;
+      }
+
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: authEmail,
+        password,
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      const table = role === "student" ? "students" : "teachers";
       const insertData =
         role === "student"
-          ? { bec_no: becNo, name, password }
-          : { email, name, password };
+          ? { bec_no: becNo, name, user_id: data.user.id }
+          : { email, name, user_id: data.user.id };
 
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from(table)
         .insert([insertData]);
 
@@ -61,44 +70,51 @@ const AuthComponent = () => {
       }
 
       alert(`Signed up successfully as ${role}`);
-    } else {
-      const query = supabase
-        .from(table)
-        .select("*")
-        .eq(
-          role === "student" ? "bec_no" : "email",
-          role === "student" ? becNo : email
-        )
-        .eq("password", password)
-        .single();
-
-      const { data, error: loginError } = await query;
-
-      if (loginError || !data) {
-        setError("Invalid credentials.");
-        return;
-      }
-      // setLoggedIn(true);
-      localStorage.setItem("loggedIn", "true");
-      // setUserData({
-      //   role,
-      //   ...(role === "student"
-      //     ? {id:data.student_id, name: data.name, bec_no: data.bec_no }
-      //     : {id:data.teacher_id, name: data.name, email: data.email }),
-      // });
-      localStorage.setItem(
-        "userData",
-        JSON.stringify({
-          role,
-          ...(role === "student"
-            ? { id: data.student_id, name: data.name, bec_no: data.bec_no }
-            : { id: data.teacher_id, name: data.name, email: data.email }),
-        })
-      );
-
-      alert(`Logged in successfully as ${role}`);
-      navigate(role === "student" ? "/student" : "/teacher");
     }
+
+    // LOGIN
+    const { data: loginData, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email: authEmail,
+        password,
+      });
+
+    if (loginError || !loginData.session) {
+      setError("Invalid credentials.");
+      return;
+    }
+
+    const token = loginData.session.access_token;
+    localStorage.setItem("token", token);
+
+    const userId = loginData.user.id;
+    const table = role === "student" ? "students" : "teachers";
+    const field = "user_id";
+
+    const { data: profile, error: profileError } = await supabase
+      .from(table)
+      .select("*")
+      .eq(field, userId)
+      .single();
+
+    if (profileError || !profile) {
+      setError("Profile not found.");
+      return;
+    }
+
+    const userInfo =
+      role === "student"
+        ? { id: profile.student_id, name: profile.name, bec_no: profile.bec_no }
+        : { id: profile.teacher_id, name: profile.name, email: profile.email };
+
+    setLoggedIn(true);
+    setUserData({ role, ...userInfo });
+
+    setLoggedIn(true);
+    setUserData({ role, ...userInfo });
+
+    alert(`Logged in successfully as ${role}`);
+    navigate(role === "student" ? "/student" : "/teacher");
   };
 
   return (
@@ -113,11 +129,11 @@ const AuthComponent = () => {
           } bg-center bg-cover`}
         ></div>
         <div className="w-full flex items-center justify-center py-4 sm:py-6 md:py-8">
-          <div className="bg-white shadow-[0_4px_8px_0_rgba(0,0,0,0.2),_0_6px_20px_0_rgba(0,0,0,0.19)] rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-            <div className="flex justify-center mb-4 sm:mb-6">
+          <div className="bg-white shadow-xl rounded-xl p-6 w-full max-w-lg">
+            <div className="flex justify-center mb-4">
               <button
                 onClick={() => setMode("login")}
-                className={`px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-semibold ${
+                className={`px-4 py-2 font-semibold ${
                   mode === "login"
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-blue-600"
@@ -127,7 +143,7 @@ const AuthComponent = () => {
               </button>
               <button
                 onClick={() => setMode("signup")}
-                className={`px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-semibold ${
+                className={`px-4 py-2 font-semibold ${
                   mode === "signup"
                     ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-blue-600"
@@ -137,8 +153,8 @@ const AuthComponent = () => {
               </button>
             </div>
 
-            <div className="mb-3 sm:mb-4 text-center text-sm sm:text-base">
-              <label className="mr-2 sm:mr-4">
+            <div className="mb-4 text-center">
+              <label className="mr-4 font-semibold">
                 <input
                   type="radio"
                   name="role"
@@ -146,10 +162,10 @@ const AuthComponent = () => {
                   checked={role === "student"}
                   onChange={() => setRole("student")}
                   className="mr-1"
-                />{" "}
+                />
                 Student
               </label>
-              <label>
+              <label className="font-semibold">
                 <input
                   type="radio"
                   name="role"
@@ -157,87 +173,71 @@ const AuthComponent = () => {
                   checked={role === "teacher"}
                   onChange={() => setRole("teacher")}
                   className="mr-1"
-                />{" "}
+                />
                 Teacher
               </label>
             </div>
 
             <form onSubmit={handleSubmit}>
               {mode === "signup" && (
-                <div className="mb-3 sm:mb-4">
-                  <label className="block mb-1 text-xs sm:text-sm font-medium">
-                    Full Name
-                  </label>
+                <div className="mb-4">
+                  <label className="block mb-1 font-semibold">Full Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
-                    placeholder="Your name"
+                    className="w-full px-3 py-2 border rounded-md"
                   />
                 </div>
               )}
 
               {role === "student" ? (
-                <div className="mb-3 sm:mb-4">
-                  <label className="block mb-1 text-xs sm:text-sm font-medium">
-                    BEC Number
-                  </label>
+                <div className="mb-4">
+                  <label className="block mb-1 font-semibold">BEC Number</label>
                   <input
                     type="text"
                     value={becNo}
                     onChange={(e) => setBecNo(e.target.value)}
-                    className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
-                    placeholder="Enter your BEC Number"
+                    className="w-full px-3 py-2 border rounded-md"
                     required
                   />
                 </div>
               ) : (
-                <div className="mb-3 sm:mb-4">
-                  <label className="block mb-1 text-xs sm:text-sm font-medium">
-                    Email ID
-                  </label>
+                <div className="mb-4">
+                  <label className="block mb-1 font-semibold">Email</label>
                   <input
-                    type="text"
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md"
-                    placeholder="Enter your ID"
+                    className="w-full px-3 py-2 border rounded-md"
                     required
                   />
                 </div>
               )}
 
-              <div className="mb-3 sm:mb-4 relative">
-                <label className="block mb-1 text-xs sm:text-sm font-medium">
-                  Password
-                </label>
+              <div className="mb-4 relative">
+                <label className="block mb-1 font-semibold">Password</label>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-2 py-1 sm:px-3 sm:py-2 text-sm sm:text-base border rounded-md pr-8 sm:pr-10"
-                  placeholder="••••••••"
+                  className="w-full px-3 py-2 border rounded-md pr-10"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-6 sm:top-8 right-2 sm:right-3 text-xs sm:text-sm text-blue-600 font-semibold"
+                  className="absolute top-[70%] right-3 text-sm transform -translate-y-1/2 text-blue-600 font-semibold"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
 
-              {error && (
-                <div className="text-red-500 text-xs sm:text-sm mb-2 sm:mb-3">
-                  {error}
-                </div>
-              )}
+              {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-1 sm:py-2 text-sm sm:text-base rounded-md hover:bg-blue-700 font-semibold"
+                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 font-semibold"
               >
                 Continue
               </button>

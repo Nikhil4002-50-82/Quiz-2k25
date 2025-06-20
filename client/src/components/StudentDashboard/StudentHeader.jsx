@@ -1,6 +1,9 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import supabase from "../../../utils/supabase";
+
 import { LoginContext } from "../../context/LoginContext";
+
 import { FaUserCircle } from "react-icons/fa";
 
 const StudentHeader = () => {
@@ -46,11 +49,10 @@ const StudentHeader = () => {
               </div>
               <button
                 className="md:hidden mx-4 h-9 rounded-lg w-[8em] bg-red-600 text-white font-semibold "
-                onClick={() => {
+                onClick={async () => {
+                  await supabase.auth.signOut();
                   setLoggedIn(false);
                   setUserData(null);
-                  localStorage.removeItem("loggedIn");
-                  localStorage.removeItem("userData");
                   navigate("/");
                 }}
               >
@@ -58,11 +60,10 @@ const StudentHeader = () => {
               </button>
               <button
                 className="hidden md:flex w-full md:w-24 h-8 md:h-8 text-purple-600 md:bg-white md:hover:bg-red-600 md:hover:text-white  items-center justify-center font-bold rounded-lg text-sm sm:text-base md:rounded-lg bg-red-600 mx-2 md:mx-0"
-                onClick={() => {
+                onClick={async () => {
+                  await supabase.auth.signOut();
                   setLoggedIn(false);
                   setUserData(null);
-                  localStorage.removeItem("loggedIn");
-                  localStorage.removeItem("userData");
                   navigate("/");
                 }}
               >
