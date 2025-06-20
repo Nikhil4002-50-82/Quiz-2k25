@@ -6,6 +6,12 @@
 
 ---
 
+### Live Demo
+
+[https://quiz-2k25.vercel.app](https://quiz-2k25.vercel.app)
+
+---
+
 ## Features
 
 ### Faculty Panel
