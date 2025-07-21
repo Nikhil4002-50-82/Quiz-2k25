@@ -4,13 +4,9 @@
 
 > Built with React, Supabase, and TailwindCSS
 
----
-
 ### Live Demo
 
 [https://quiz-2k25.vercel.app](https://quiz-2k25.vercel.app)
-
----
 
 ## Features
 
@@ -36,9 +32,7 @@
 
 - Auto-grading for objective questions
 - Manual grading for subjective answers
-
----
-
+- 
 ## Environment Setup
 
 1. **Clone the Repository**
@@ -68,17 +62,13 @@
    npm start
    ```
 
----
-
 ## Acknowledgements
 
 - [Supabase](https://supabase.com/)
 - [React](https://reactjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 
----
-
 ## Contact
 
-**Author:** Nikhil  
-**Email:** nikhil.4002.50.82
+**Author:** Nikhil R Nambiar 
+**Email:** nikhil.4002.50.82@gmail.com
