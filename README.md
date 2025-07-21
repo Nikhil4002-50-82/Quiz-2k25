@@ -70,5 +70,5 @@
 
 ## Contact
 
-**Author:** Nikhil R Nambiar 
+**Author:** Nikhil R Nambiar
 **Email:** nikhil.4002.50.82@gmail.com
